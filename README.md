@@ -1,7 +1,7 @@
 BPE: Business Process Engine
 ============================
 
-[![Actions Status](https://github.com/synrc/bpe/workflows/mix/badge.svg)](https://github.com/synrc/bpe/actions)
+[![Actions Status](https://github.com/zencrypted/bpe/workflows/mix/badge.svg)](https://github.com/zencrypted/bpe/actions)
 [![Hex pm](https://img.shields.io/hexpm/v/bpe.svg?style=flat)](https://hex.pm/packages/bpe)
 
 Overview
@@ -270,8 +270,4 @@ Let us see how we could create initial 'Wire Transfer' transaction:
 Credits
 -------
 
-* Maxim Sokhatsky
-* Oleksandr Naumov
-* Ivan Kulyk
-
-OM A HUM
+* Namdak Tonpa
