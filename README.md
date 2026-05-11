@@ -1,7 +1,6 @@
 BPE: Business Process Engine
 ============================
 
-[![Actions Status](https://github.com/zencrypted/bpe/workflows/mix/badge.svg)](https://github.com/zencrypted/bpe/actions)
 [![Hex pm](https://img.shields.io/hexpm/v/bpe.svg?style=flat)](https://hex.pm/packages/bpe)
 
 Overview
