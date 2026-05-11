@@ -1,0 +1,63 @@
+<!DOCTYPE html><html><head><meta charset="utf-8" /><meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="" /><meta name="author" content="Maxim Sokhatsky" />
+<title>TASK</title>
+<link rel="stylesheet" href="https://n2o.dev/blank.css"/>
+<link rel="stylesheet" href="https://n2o.dev/zima.css"/>
+<link rel="shortcut icon" type="image/x-icon" href="https://n2o.dev/img/favicon.ico"/>
+<link rel="apple-touch-icon" sizes="180x180" href="https://n2o.dev/img/apple-touch-icon.png"/>
+<link rel="icon" type="image/png" sizes="32x32" href="https://n2o.dev/img/favicon-32x32.png"/>
+<link rel="icon" type="image/png" sizes="16x16" href="https://n2o.dev/img/favicon-16x16.png"/>
+<link rel="manifest" href="https://n2o.dev/img/site.webmanifest"/>
+</head><body><nav>
+    <a href="https://n2o.dev">DEV</a>
+    <a href="https://bpe.n2o.dev">BPE</a>
+    <a href="#" style="background:#ededed;">TASK</a>
+  <div class="dropdown">
+    <a onclick="drop()" class="dropbtn">EN</a>
+    <div id="dropdown" class="dropdown-content">
+      <a href="https://n2o.dev/deps/bpe/man/ua/task.htm">UA</a>
+      <a href="#">EN</a>
+    </div>
+  </div>
+</nav><header>
+    <a href="../index.html"><img src="https://openmoji.org/data/color/svg/1F4A0.svg"/></a>
+    <h1>TASK</h1>
+</header><main>
+    <section>
+        <h3>INTRO</h3>
+        <p>The <b>bpe_task</b> module provides tasks handling functionality (receive, send, user, manual).</p>
+    </section>
+    <section>
+        <h3>TASKS</h3>
+        <p>The list of supported tasks.</p>
+        <figure><img src="img/tasks.png" width="600px"/></figure>
+    </section>
+    <section>
+        <h3>FLOWS</h3>
+        <p>The list of supported flows.</p>
+        <figure><img src="img/flows.png" width="500px"/></figure>
+    </section>
+    <section>
+        <h3>CALLBACK API</h3>
+         <p>BPE allows you to bind on <b>sequenceFlow</b> and its from and to fields by
+            defining action/2 function in your module.</p>
+        <h4>action({request, atom(), atom()}, #process{}) ->
+                   {reply, Task, State} |
+                   {reply, State} |
+                   {error, Message, Task, State} |
+                   {stop, Proc}.</h4>
+        <p>Example:</p>
+        <figure><code> action({request, From, To}, Proc) -> {stop, Proc}.</code></figure>
+    </section>
+    <section>
+        <p>This module may refer to:
+        <b><a href="bpe.htm">BPE</a></b>
+        </p>
+    </section>
+
+</main><footer>
+    Made with <span class="heart">❤</span> to N2O
+</footer></body>
+<script>function drop(){document.getElementById("dropdown").classList.toggle("show");}</script>
+</html>

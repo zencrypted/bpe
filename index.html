@@ -1,0 +1,282 @@
+<!DOCTYPE html><html><head><meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="" /><meta name="author" content="Maxim Sokhatsky" />
+<title>BPE</title>
+<link rel="stylesheet" href="https://n2o.dev/blank.css"/>
+<link rel="stylesheet" href="https://n2o.dev/zima.css"/>
+<link rel="shortcut icon" type="image/x-icon" href="https://n2o.dev/img/favicon.ico"/>
+<link rel="apple-touch-icon" sizes="180x180" href="https://n2o.dev/img/apple-touch-icon.png"/>
+<link rel="icon" type="image/png" sizes="32x32" href="https://n2o.dev/img/favicon-32x32.png"/>
+<link rel="icon" type="image/png" sizes="16x16" href="https://n2o.dev/img/favicon-16x16.png"/>
+<link rel="manifest" href="https://n2o.dev/img/site.webmanifest"/>
+</head><body><nav>
+    <a href="https://n2o.dev">DEV</a>
+    <a href="https://bpe.n2o.dev" style="background:#ededed;">BPE</a>
+  <div class="dropdown">
+    <a onclick="drop()" class="dropbtn">EN</a>
+    <div id="dropdown" class="dropdown-content">
+      <a href="https://n2o.dev/ua/deps/bpe/">UA</a>
+      <a href="#">EN</a>
+    </div>
+  </div>
+</nav><header>
+    <a href="https://github.com/synrc/bpe"><img src="https://openmoji.org/data/color/svg/1F4A0.svg"/></a>
+    <h1>BPE</h1>
+</header><aside>
+    <article>
+        <section>
+            <h3>SYNOPSIS</h3>
+            <div>
+                Business Processing for Enterprises (BPE) provides infrastructure
+                for workflow definitions according to ISO-19510 BPMN 2.0 OMG standard.
+                It can be used for process orchestration,
+                rule based production systems and as transactional log.
+            </div>
+            <br />
+        <figure>
+        <code> $ mad get bpe
+ $ cd deps/bpe
+ $ mix deps.get
+ $ iex -S mix</code></figure>
+        </section>
+        <section>
+            <h3>MODULES</h3>
+            <div><ul><li><a href="man/bpe.htm">BPE</a></li>
+                     <li><a href="man/task.htm">TASK</a></li>
+                     <li><a href="man/gate.htm">GATEWAY</a></li>
+                     <li><a href="man/event.htm">EVENT</a></li></ul></div>
+            <br />
+            <div>
+                NOV 2022 © <a href="https://github.com/5HT">5HT</a> ISC<br />
+                VER 7.1 6.11 5.12
+            </div>
+        </section>
+        <section>
+        </section>
+    </article>
+</aside>
+<main>
+    <section>
+    <h3>MODEL</h3>
+    <p>You can use Camunda Modeler of <a href="https://bpmn.io">bpmn.io</a> with BPE:</p>
+    <figure><img src="man/img/camunda.png"/></figure>
+    </section>
+    <section>
+    <h3>SESSION</h3>
+    <p>Transactional persistent (rocksdb) business processing with multi-threading executioin,
+       hierarchical traces and BPMN 2.0 XML support out of the box.</p>
+    <figure><code>
+iex(1)> {_,p} = :bpe.start :bpe_xml.def, []
+{:ok, "77012724426000"}
+iex(2)> :bpe.next p
+{:complete, 'either'}
+iex(3)> :bpe.next p
+{:complete, 'left'}
+iex(4)> :bpe.next p
+{:complete, 'right'}
+iex(5)> :bpe.next p
+{:complete, 'join'}
+iex(6)> :bpe.next p
+{:complete, 'epilog'}
+iex(7)> :bpe.next p
+{:complete, 'finish'}
+iex(8)> :bpe.next p
+:Final
+    </code></figure>
+
+<figure>
+    <figcaption>How the process is stored in KVS</figcaption>
+    <code>
+ iex(10)> :kvs.all :writer
+ [
+   {:writer, '/bpe/proc', 1, [], [], []},
+   {:writer, '/bpe/flow/77012724426000', 1, [], [], []},
+   {:writer, '/bpe/hist/77012724426000', 1, [], [], []}
+ ]
+    </code></figure>
+
+<figure>
+    <figcaption>The hierarchical process trace of flows but not tasks:</figcaption>
+    <code>
+ iex(11)> :bpe.hist p
+ [
+   {:hist, {:step, 7, '77012724426000'}, :feed, [], [], [], [],
+    {:sequenceFlow, 'x7', [], 'epilog', 'finish'}, [],
+    {:ts, {{2019, 10, 11}, {4, 3, 7}}}},
+   {:hist, {:step, 6, '77012724426000'}, :feed, [], [], [], [],
+    {:sequenceFlow, 'x6', [], 'join', 'epilog'}, [],
+    {:ts, {{2019, 10, 11}, {4, 3, 6}}}},
+   {:hist, {:step, 5, '77012724426000'}, :feed, [], [], [], [],
+    {:sequenceFlow, 'x5', [], 'right', 'join'}, [],
+    {:ts, {{2019, 10, 11}, {4, 3, 6}}}},
+   {:hist, {:step, 4, '77012724426000'}, :feed, [], [], [], [],
+    {:sequenceFlow, 'x4', [], 'left', 'join'}, [],
+    {:ts, {{2019, 10, 11}, {4, 3, 6}}}},
+   {:hist, {:step, 3, '77012724426000'}, :feed, [], [], [], [],
+    {:sequenceFlow, 'x3', [], 'either', 'right'}, [],
+    {:ts, {{2019, 10, 11}, {4, 3, 5}}}},
+   {:hist, {:step, 2, '77012724426000'}, :feed, [], [], [], [],
+    {:sequenceFlow, 'x2', [], 'either', 'left'}, [],
+    {:ts, {{2019, 10, 11}, {4, 3, 5}}}},
+   {:hist, {:step, 1, '77012724426000'}, :feed, [], [], [], [],
+    {:sequenceFlow, 'x1', [], 'start', 'either'}, [],
+    {:ts, {{2019, 10, 11}, {4, 3, 4}}}},
+   {:hist, {:step, 0, '77012724426000'}, :feed, [], [], [], [], :Created, [],
+    {:ts, {{2019, 10, 11}, {4, 2, 25}}}}
+ ]
+     </code></figure>
+
+<figure>
+    <figcaption>The history of scheduler state of execution threads:</figcaption>
+    <code>
+ > :kvs.all '/bpe/flow/77012724426000'
+ [
+   {:sched, {:step, 0, '77012724426000'}, 1, ['x1']},
+   {:sched, {:step, 1, '77012724426000'}, 1, ['x2', 'x3']},
+   {:sched, {:step, 2, '77012724426000'}, 2, ['x4', 'x3']},
+   {:sched, {:step, 3, '77012724426000'}, 1, ['x4', 'x5']},
+   {:sched, {:step, 4, '77012724426000'}, 1, ['x5']},
+   {:sched, {:step, 5, '77012724426000'}, 1, ['x6']},
+   {:sched, {:step, 6, '77012724426000'}, 1, ['x7']},
+   {:sched, {:step, 7, '77012724426000'}, 1, []}
+ ]
+    </code></figure>
+    </section>
+     <section>
+<h3>BPMN SPEC</h3>
+
+<p>This schema covers 80% of all workflows and provides only 20% of standard coverage.
+   We call it Lightweight BPMN or BPE.</p>
+
+<figure>
+    <figcaption>Lightweight BPMN</figcaption>
+    <code>
+ -record(beginEvent ,   { ?TASK }).
+ -record(endEvent,      { ?TASK }).
+ -record(task,          { ?TASK }).
+ -record(userTask,      { ?TASK }).
+ -record(serviceTask,   { ?TASK }).
+ -record(receiveTask,   { ?TASK, reader=[] :: #reader{} }).
+ -record(sendTask,      { ?TASK, writer=[] :: #writer{} }).
+ -record(gateway,       { ?TASK, type= parallel :: gate(), filler=[] :: [] }).
+ -record(messageEvent,  { ?EVENT }).
+ -record(boundaryEvent, { ?EVENT, ?CYCLIC }).
+ -record(timeoutEvent,  { ?EVENT, ?CYCLIC }).
+ -record(timeout,       { spec= [] :: term() }).
+ -record(sequenceFlow,  { name=[] :: term(),
+                          condition=[] :: term(),
+                          source=[] :: [] | atom(),
+                          target=[] :: [] | atom() | list(atom()) }).
+
+ -type events() :: #messageEvent{} | #boundaryEvent{} | #timeoutEvent{}.
+ -type procId() :: [] | integer() | {atom(),any()}.
+ -type gate()   :: exclusive | parallel | inclusive | complex | event.
+ -type tasks()  :: #task{} | #serviceTask{} | #userTask{}
+                 | #receiveTask{} | #beginEvent{} | #endEvent{}.
+    </code></figure>
+    </section>
+    <section>
+    <h3>BPE API</h3>
+    <figure>
+    <figcaption>BPE API</figcaption>
+    <code>
+ -record(ts,    { time= [] :: term() }).
+ -record(step,  { id = 0 :: integer(), proc = "" :: list() }).
+ -record(sched, { id = [] :: [] | #step{},
+                  pointer = -1 :: integer(),
+                  state = [] :: list(#sequenceFlow{})  }).
+
+ -record(hist,  { id = [] :: [] | #step{},
+                  name=[] :: [] | binary(),
+                  task=[] :: [] | atom(),
+                  docs=[] :: list(tuple()),
+                  time=[] :: [] | #ts{} }).
+
+ -record(process, { id = []   :: procId(),
+                    name=[]   :: [] | binary() | string() | atom(),
+                    feeds=[]  :: list(),
+                    roles=[]  :: list(),
+                    tasks=[]  :: list(tasks()),
+                    events=[] :: list(events()),
+                    flows      = [] :: list(#sequenceFlow{}),
+                    rules      = [] :: [] | term(),
+                    docs       = [] :: list(tuple()),
+                    options    = [] :: term(),
+                    task       = 'Created' :: [] | atom(),
+                    timer      = [] :: [] | reference(),
+                    notifications=[] :: [] | term(),
+                    result     = [] :: [] | binary(),
+                    started    = [] :: [] | #ts{},
+                    beginEvent = [] :: [] | atom(),
+                    endEvent   = [] :: [] | atom()}).
+
+ -record(subProcess, { name=[] :: [] | atom(),
+                       diagram= #process{} :: #process{} }).
+    </code></figure>
+
+    </section>
+     <section>
+
+     <h3>BANK SAMPLE</h3>
+<figure>
+    <figcaption>IBAN account transactions as a process:</figcaption>
+    <code>
+ -module(bpe_account).
+ -include("bpe.hrl").
+ -compile(export_all).
+
+ action(_,P) ->
+    {reply,P}.
+
+ def() ->
+    #process { name = 'IBAN Account',
+        flows = [
+            #sequenceFlow{name='1', source='Created',   target='Init'},
+            #sequenceFlow{name='2', source='Init',      target='Upload'},
+            #sequenceFlow{name='3', source='Upload',    target='Payment'},
+            #sequenceFlow{name='4', source='Payment',   target='Signatory'},
+            #sequenceFlow{name='5', source='Payment',   target='Process'},
+            #sequenceFlow{name='6', source='Process',   target='Process'},
+            #sequenceFlow{name='7', source='Process',   target='Final'},
+            #sequenceFlow{name='8', source='Signatory', target='Process'},
+            #sequenceFlow{name='9', source='Signatory', target='Final'} ],
+        tasks = [
+            #beginEvent  { name='Created',   module = bpe_account },
+            #userTask    { name='Init',      module = bpe_account },
+            #userTask    { name='Upload',    module = bpe_account },
+            #userTask    { name='Signatory', module = bpe_account },
+            #serviceTask { name='Payment',   module = bpe_account },
+            #serviceTask { name='Process',   module = bpe_account },
+            #endEvent    { name='Final',     module = bpe_account } ],
+        beginEvent = 'Created',
+        endEvent = 'Final',
+        events = [#messageEvent { name='PaymentReceived'},
+                  #boundaryEvent{ name='*',
+                                  timeout=#timeout{spec={0,{10,0,10}}}}]}.
+    </code></figure>
+    </section>
+     <section>
+        <a name="plugin"></a><h3>PRESENCE</h3>
+        <p>Companies that use BPE:</p>
+        <div>
+        <ul><li><a href="https://pb.ua/depozit">pb.ua/depozit</a> — АТ КБ "ПриватБанк"</li>
+            <li><a href="https://nynja.io">nynja.io</a> — NYNJA, Inc.</li>
+            <li><a href="https://infotech.gov.ua">infotech.gov.ua</a> — ДП "ІНФОТЕХ".</li>
+            </ul></div>
+        <br /><br />
+    </section>
+     <section>
+        <a name="plugin"></a><h3>CONTRIBUTORS</h3>
+        <div>
+        <ul><li><a href="https://github.com/umka1332">umka1332</a> — Oleksandr Naumov</li>
+            <li><a href="https://github.com/5HT">5HT</a> — Namdak Tonpa</li>
+            <li><a href="https://github.com/SunRiseGG">SunRiseGG</a> — Ivan Kulyk</li>
+        </ul></div>
+        <br /><br />
+    </section>
+</main><footer>
+    Made with <span class="heart">❤</span> to N2O
+</footer></body>
+<script>function drop(){document.getElementById("dropdown").classList.toggle("show");}</script>
+</html>
