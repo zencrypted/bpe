@@ -42,7 +42,7 @@ debug(Proc, Name, Targets, Target, Status, Reason) ->
     end.
 
 process_event(EventType, Event, #process{id=Pid, module=Module} = Proc) ->
-  Name = kvs:field(Event, name),
+  Name = event_name(Event),
   #result{type=T, state = NewProc} = Res =
     case Module:action(Event, Proc) of
       #result{type = reply} = R when EventType == async -> R#result{type = noreply, reply = []};
@@ -58,6 +58,14 @@ process_event(EventType, Event, #process{id=Pid, module=Module} = Proc) ->
       bpe:constructResult(X#result{opt={continue, C}});
     X -> bpe:constructResult(X)
   end.
+
+event_name(#messageEvent{name = Name}) -> Name;
+event_name(#asyncEvent{name = Name}) -> Name;
+event_name(#broadcastEvent{name = Name}) -> Name;
+event_name(#boundaryEvent{name = Name}) -> Name;
+event_name(#timeoutEvent{name = Name}) -> Name;
+event_name(_) -> [].
+
 
 process_task(Stage, Proc) ->
     process_task(Stage, Proc, false).

@@ -32,7 +32,7 @@
                    | {service,atom(),atom()}
                    | {service,atom()}.
 
--type callback() :: {callback,atom(),atom()} | {callback,atom()}.
+-type callback() :: {callback,atom(),atom(),term()} | {callback,atom(),atom()} | {callback,atom()}.
 
 
 -record(sequenceFlow, { id=[] :: list(),
@@ -41,7 +41,7 @@
                         source=[] :: list(),
                         target=[] :: list(integer()) | list(list()),
                         callbacks = [] :: [] | list(callback()),
-                        expression = [] :: [] | list() }).
+                        expression = [] :: [] | list() | tuple() }).
 
 -record(beginEvent ,  { ?TASK }).
 -record(endEvent,     { ?TASK }).
@@ -71,18 +71,18 @@
 -record(broadcastEvent, { id      = [] :: [] | list() | binary(),
                           sender  = [] :: [] | term(),
                           topic   = [] :: [] | list() | binary(),
-                          type    = immediate :: delayed,
+                          type    = immediate :: immediate | delayed,
                           name    = [] :: [] | term(),
                           payload = [] :: [] | term() }).
 
--record(subscription,   { id      = [] :: [] | list() | binary(),
-                          who     = [] :: [] | list() | binary(),
-                          topic   = [] :: [] | list() | binary() }).
+-record(subscription,   { id      = [] :: [] | list() | binary() | '_',
+                          who     = [] :: [] | list() | binary() | '_',
+                          topic   = [] :: [] | list() | binary() | '_' }).
 
 
 -type tasks()  :: #task{} | #serviceTask{} | #userTask{} | #receiveTask{} | #sendTask{} | #beginEvent{} | #endEvent{}.
 -type events() :: #messageEvent{} | #boundaryEvent{} | #timeoutEvent{}.
--type procId() :: [] | string() | integer() | {atom(),any()}.
+-type procId() :: binary() | [] | string() | integer() | {atom(),any()}.
 -type gate()   :: exclusive | parallel | inclusive | complex | event.
 
 -record(ts,    { time= [] :: term() }).
@@ -181,7 +181,7 @@
                         children    = [] :: [] | list() }).
 
 -record(continue,  {    id = [] :: list() | binary(),
-                        fn = [] :: atom(),
+                        fn = [] :: [] | atom(),
                         args = [] :: [] | list(),
                         module = [] :: [] | atom(),
                         type = bpe :: atom() }).

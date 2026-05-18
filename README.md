@@ -68,7 +68,7 @@ values from Erlang messages being sent to BPE process.
                  next=[] :: [] | integer(),
                  pointer = -1 :: integer(),
                  state = [] :: list(list()) }).
-                 
+
 -record(hist,         { id = [] :: [] | #step{},
                         prev=[] :: [] | integer(),
                         next=[] :: [] | integer(),
@@ -106,7 +106,7 @@ Tasks and Flows
 ---------------
 
 The step itself is represented as `task` (point). The transition between steps is
-represented as `sequenceFlow` (edge). 
+represented as `sequenceFlow` (edge).
 
 ```erlang
 -define(TASK,           id=[] :: list(),

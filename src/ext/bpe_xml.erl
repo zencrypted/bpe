@@ -132,8 +132,7 @@ expressionType(X) when is_tuple(X) ->
     case erlang:element(1, X) of
       callback -> callback;
       T -> case lists:member(T, ?CONDITION_TYPES) of true -> condition; false -> unknown end
-    end;
-expressionType(_) -> unknown.
+    end.
 
 fillInOut(Tasks, []) -> Tasks;
 fillInOut(Tasks, [#sequenceFlow{id=Name,source=Source,target=Target}|Flows]) ->

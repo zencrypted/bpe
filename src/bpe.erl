@@ -84,6 +84,7 @@
 -export([head/1,
          hist/1,
          sched_head/1,
+         sched/1,
          step/2,
          docs/1,
          doc/2,
@@ -586,6 +587,7 @@ head(ProcId) ->
         _ -> []
     end.
 
+-spec sched(#step{} | procId()) -> #sched{} | list(#sched{}) | [].
 sched(#step{proc = ProcId} = Step) ->
     Key = case application:get_env(kvs, dba, kvs_mnesia) of
               kvs_rocks -> key("/bpe/flow/", ProcId);
