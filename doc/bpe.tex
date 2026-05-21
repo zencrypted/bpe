@@ -1,0 +1,142 @@
+\documentclass[11pt,a4paper]{article}
+
+% Minimal packages
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english]{babel}
+\usepackage{geometry}
+\geometry{margin=2.5cm}
+
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    citecolor=blue,
+    urlcolor=blue
+}
+
+\usepackage{listings}
+\lstset{
+    backgroundcolor=\color{white},
+    keywordstyle=\color{blue},
+    basicstyle=\ttfamily\footnotesize,
+    columns=fixed,
+    breaklines=true
+}
+
+\title{BPE: A Lightweight Native BPMN Implementation for Erlang/OTP \\ 
+Preserving Clean Process Semantics}
+\author{Maxim Sokhatsky \\ Synrc Research}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+BPE (Business Process Engine) is a compact, production-grade workflow engine written in Erlang/OTP that implements a clean subset of BPMN 2.0. Unlike traditional BPMN engines such as Camunda, where developers are forced to attach scripts and listeners to gateways and sequence flows (pre/post events), BPE treats the process as a natural sequence of actions executed within a single semantic step. This approach dramatically reduces complexity while maintaining full persistence, fault-tolerance, and auditability.
+\end{abstract}
+
+\section{Introduction}
+
+BPE is a lightweight business process management engine developed as part of the Synrc stack. It is designed for real enterprise use — particularly in banking, document management, CRM, and telecom systems — where reliability, auditability, and simplicity are paramount.
+
+At its core, BPE is a microkernel that executes native Erlang record-based process definitions combined with Event-Condition-Action logic. The entire engine consists of roughly 400 lines of clean functional code, making it one of the most compact and maintainable workflow engines available.
+
+BPE stores all process state and history in KVS (Key-Value Store), providing strong persistence guarantees and seamless integration with the Erlang ecosystem. Every process instance is a supervised Erlang process with full crash recovery and migration capabilities.
+
+\section{Key Design Philosophy}
+
+The central idea of BPE is to preserve \textbf{clean process semantics}. 
+
+In most BPMN engines (e.g. Camunda, Activiti, jBPM), the execution model forces developers to split business logic across:
+\begin{itemize}
+    \item Sequence flow conditions
+    \item Execution listeners (pre/post)
+    \item Task listeners
+    \item Gateways with attached scripts
+\end{itemize}
+
+This results in fragmented logic that is hard to read, debug, and maintain.
+
+BPE takes the opposite approach: \textbf{the process flow is executed naturally in one action}. A task (userTask or serviceTask) defines its module and the engine calls the corresponding Erlang functions directly. The transition to the next step is handled atomically within the same semantic context.
+
+This design aligns with Erlang’s native process calculus (Pi-calculus) semantics and provides a much more idiomatic and readable way to express business workflows.
+
+\section{Core Concepts}
+
+\subsection{Process Definition}
+
+Processes are defined as Erlang records:
+
+\begin{lstlisting}
+deposit_app() -> #process {
+    name = 'Create Deposit Account',
+    flows = [
+        #sequenceFlow{source='Init',      target='Payment'},
+        #sequenceFlow{source='Payment',   target='Signatory'},
+        #sequenceFlow{source='Payment',   target='Process'},
+        #sequenceFlow{source='Signatory', target='Process'},
+        #sequenceFlow{source='Signatory', target='Finish'}
+    ],
+    tasks = [
+        #userTask    {name='Init',      module=deposit},
+        #userTask    {name='Signatory', module=deposit},
+        #serviceTask {name='Payment',   module=deposit},
+        #serviceTask {name='Process',   module=deposit},
+        #endEvent    {name='Finish'}
+    ],
+    beginEvent = 'Init',
+    endEvent = 'Final'
+}.
+\end{lstlisting}
+
+\subsection{Main API}
+
+\begin{itemize}
+    \item \texttt{bpe:start(Process, Options)} — starts a new process instance
+    \item \texttt{bpe:complete(PidOrId)} — moves the process to the next step
+    \item \texttt{bpe:amend(PidOrId, Document)} — attaches business documents
+    \item \texttt{bpe:event(Event)} — sends external events
+    \item \texttt{bpe:history(Id, N)} — retrieves execution log
+    \item \texttt{bpe:load(Id)} — loads a terminated process for continuation
+\end{itemize}
+
+All operations are atomic and persisted through KVS.
+
+\section{Comparison with Camunda and Other Engines}
+
+\begin{itemize}
+    \item \textbf{Clean Semantics}: BPE executes business logic inside task modules rather than scattering it across listeners and gateways.
+    \item \textbf{No XML Hell}: Processes are defined in Erlang terms (or optional DSLs).
+    \item \textbf{Native Persistence}: Every step and document is automatically saved via KVS/RocksDB.
+    \item \textbf{Supervision \& Fault Tolerance}: Built on Erlang/OTP principles.
+    \item \textbf{Auditability}: Complete immutable history is maintained automatically.
+    \item \textbf{Performance}: Extremely low overhead — suitable for high-frequency financial workflows.
+\end{itemize}
+
+While Camunda excels in visual modeling for large analyst teams, BPE is optimized for engineering teams that value clarity, maintainability, and performance over drag-and-drop modeling.
+
+\section{Use Cases}
+
+BPE has been successfully used in:
+\begin{itemize}
+    \item Banking core systems (deposit, credit, payment processing)
+    \item Document workflow and approval systems
+    \item CRM interaction flows
+    \item Telecom service activation and billing processes
+    \item Regulatory compliance workflows
+\end{itemize}
+
+Its ability to handle both human tasks and automated service tasks within the same clean model makes it particularly suitable for hybrid human–machine business processes.
+
+\section{Conclusion}
+
+BPE demonstrates that a BPMN-compatible workflow engine can be implemented in a remarkably clean and efficient way by staying close to the underlying virtual machine semantics. By executing sequence flows naturally within one action and leveraging Erlang’s process model, BPE achieves excellent readability, strong fault tolerance, and production readiness with minimal code.
+
+For projects that prioritize engineering clarity and operational reliability over visual designer tools, BPE offers a compelling lightweight alternative to heavyweight BPM suites.
+
+\bigskip
+\noindent Documentation and source code: \url{https://synrc.com}
+
+\end{document}
