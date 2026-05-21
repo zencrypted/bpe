@@ -1,8 +1,9 @@
 {application, bpe,
  [
-  {description, "BPE Business Process Engine"},
-  {vsn, "13.5.18-aleph"},
+  {description, "ERP/1 BPMN Process Engine"},
+  {vsn, "13.5.22-aleph"},
   {registered, []},
+  {licenses, ["MIT"]},
   {applications, [kernel,stdlib,kvs,syn,xmerl]},
   {mod, { bpe_otp, []}},
   {env, []}
