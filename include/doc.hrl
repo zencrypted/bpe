@@ -5,7 +5,7 @@
 -record(join_application, {id=[]::[]|integer(),name=[]::[]|atom()|term(),data=[]::[]|integer()|term()}).
 -record(tour_list, {users=[]::list(#join_application{})}).
 -record(approve, {}).
--record(close_account, {}).
+-record(close_account, {id=[]}).
 -record(tx, {}).
 
 -endif.

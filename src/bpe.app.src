@@ -1,7 +1,7 @@
 {application, bpe,
  [
   {description, "ERP/1 BPMN Process Engine"},
-  {vsn, "13.5.22-aleph"},
+  {vsn, "13.5.23-aleph"},
   {registered, []},
   {licenses, ["MIT"]},
   {applications, [kernel,stdlib,kvs,syn,xmerl]},
