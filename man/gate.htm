@@ -1,56 +1,269 @@
-<!DOCTYPE html><html><head><meta charset="utf-8" /><meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<meta name="description" content="" /><meta name="author" content="Maxim Sokhatsky" />
-<title>GATE</title>
-<link rel="stylesheet" href="https://n2o.dev/blank.css"/>
-<link rel="stylesheet" href="https://n2o.dev/zima.css"/>
-<link rel="shortcut icon" type="image/x-icon" href="https://n2o.dev/img/favicon.ico"/>
-<link rel="apple-touch-icon" sizes="180x180" href="https://n2o.dev/img/apple-touch-icon.png"/>
-<link rel="icon" type="image/png" sizes="32x32" href="https://n2o.dev/img/favicon-32x32.png"/>
-<link rel="icon" type="image/png" sizes="16x16" href="https://n2o.dev/img/favicon-16x16.png"/>
-<link rel="manifest" href="https://n2o.dev/img/site.webmanifest"/>
-</head><body><nav>
-    <a href="https://n2o.dev">DEV</a>
-    <a href="https://bpe.n2o.dev">BPE</a>
-    <a href="#" style="background:#ededed;">GATE</a>
-  <div class="dropdown">
-    <a onclick="drop()" class="dropbtn">EN</a>
-    <div id="dropdown" class="dropdown-content">
-      <a href="https://n2o.dev/deps/bpe/man/ua/task.htm">UA</a>
-      <a href="#">EN</a>
-    </div>
-  </div>
-</nav><header>
-    <a href="../index.html"><img src="https://openmoji.org/data/color/svg/1F4A0.svg"/></a>
-    <h1>GATE</h1>
-</header><main>
-    <section>
-        <h3>INTRO</h3>
-        <p>The BPMN 2.0 <b>bpe_gateway</b> module provides special kind of tasks (vertices)
-           for parallel and exclusive processing (hierarchical traces).</p>
-    </section>
-    <section>
-        <h3>GATES</h3>
-        <p>The list of supported gates.</p>
-        <figure><img src="img/gates.png" width="350px"/></figure>
-         <p>Gates as Tasks are controlled by sequenceFlows.
-            BPE allows you to bind on <b>sequenceFlow</b> and its from and to fields.</p>
-        <h4>action({request, atom(), atom()}, #process{}) ->
-                   {reply, Task, State} |
-                   {reply, State} |
-                   {error, Message, Task, State} |
-                   {stop, Proc}.</h4>
-        <p>Example:</p>
-        <figure><code> action({request, From, To}, Proc) -> {stop, Proc}.</code></figure>
-    </section>
-    <section>
-        <p>This module may refer to:
-        <b><a href="bpe.htm">BPE</a></b>
-        </p>
-    </section>
+<!DOCTYPE html>
+<html>
 
-</main><footer>
-    Made with <span class="heart">❤</span> to N2O
-</footer></body>
-<script>function drop(){document.getElementById("dropdown").classList.toggle("show");}</script>
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="BPE GATEWAY manual" />
+    <meta name="author" content="Maxim Sokhatsky" />
+    <title>GATE</title>
+    <link rel="stylesheet" href="https://n2o.dev/blank.css" />
+    <link rel="stylesheet" href="https://n2o.dev/zima.css" />
+    <link rel="shortcut icon" type="image/x-icon" href="https://n2o.dev/img/favicon.ico" />
+    <link rel="apple-touch-icon" sizes="180x180" href="https://n2o.dev/img/apple-touch-icon.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="https://n2o.dev/img/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="https://n2o.dev/img/favicon-16x16.png" />
+    <link rel="manifest" href="https://n2o.dev/img/site.webmanifest" />
+    <style>
+        section ul li {
+            margin: 5px 0;
+            padding: 2px 0;
+        }
+
+        section h5 {
+            line-height: 1.2;
+            font-size: 1.1rem;
+            padding-left: 20px;
+            max-width: 850px;
+            margin: 20px auto;
+            font-weight: normal;
+            border-left: 2px solid #5BC2E7;
+        }
+
+        section h5 code {
+            word-break: break-all;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+
+<body>
+    <nav>
+        <a href="https://n2o.dev">DEV</a>
+        <a href="https://bpe.n2o.dev">BPE</a>
+        <a href="#" style="background:#ededed;">GATE</a>
+        <div class="dropdown">
+            <a onclick="drop()" class="dropbtn">EN</a>
+            <div id="dropdown" class="dropdown-content">
+                <a href="https://n2o.dev/deps/bpe/man/ua/task.htm">UA</a>
+                <a href="#">EN</a>
+            </div>
+        </div>
+    </nav>
+    <header>
+        <a href="../index.html"><img src="https://openmoji.org/data/color/svg/1F4A0.svg" /></a>
+        <h1>GATE</h1>
+    </header>
+    <main>
+        <section>
+            <h3>INTRO</h3>
+            <p>The BPMN 2.0 <b>bpe_gateways</b> module provides gateway processing logic (vertices) for managing
+                branching, merging, and parallel execution paths inside process graphs.</p>
+        </section>
+
+        <section>
+            <h3>GATEWAYS</h3>
+            <p>Supported gateway types:</p>
+            <figure><img src="img/gates.png" width="350px" /></figure>
+
+            <ul>
+                <li>
+                    <b>Exclusive (Exclusive Gateway)</b>:
+                    Splits the flow choosing exactly one outgoing branch. BPE evaluates the conditions of all outgoing
+                    sequenceFlows in order and fires the first one that returns <code>true</code>. A default
+                    sequenceFlow can be specified in the <code>def</code> attribute if all conditions evaluate to
+                    <code>false</code>.
+                </li>
+                <li>
+                    <b>Parallel (Parallel Gateway)</b>:
+                    Splits the execution into multiple concurrent flows, or acts as a synchronizing merge. When merging,
+                    the engine blocks and checks if all incoming flows have reached the gateway (using history logs).
+                    Execution proceeds only when all incoming flows have arrived.
+                </li>
+                <li>
+                    <b>Inclusive (Inclusive Gateway)</b>:
+                    Evaluates all outgoing sequenceFlow conditions and spawns concurrent paths for all conditions that
+                    evaluate to <code>true</code>. Like the parallel gateway, it acts as a synchronizing merge on
+                    incoming paths.
+                </li>
+                <li>
+                    <b>Complex (Complex Gateway)</b>:
+                    Allows building complex custom branching and merging logic.
+                </li>
+            </ul>
+        </section>
+
+        <section>
+            <h3>ERLANG RECORDS IN XML</h3>
+            <p>BPE parses BPMN XML documents and dynamically compiles conditions from
+                <code>&lt;bpmn:conditionExpression&gt;</code> tags. The text within the tag is treated as an Erlang term
+                string and parsed using <code>erl_scan</code> and <code>erl_eval</code> at load-time to yield Erlang
+                tuples/records.
+            </p>
+
+            <h4>1. Condition Tuples (evaluated in check_flow_condition/2)</h4>
+            <p>BPE supports multiple condition records defined in <code>bpe.hrl</code>:</p>
+
+            <h5>A. Compare Condition: <code>{compare, BpeDocParam, FieldIndex, ConstCheckAgainst}</code></h5>
+            <p>Queries the process environment documents (<code>Proc#process.docs</code>) matching the pattern
+                <code>BpeDocParam</code> (via <code>bpe_env:find/3</code>). It then verifies if the element at index
+                <code>FieldIndex</code> of the matched record equals <code>ConstCheckAgainst</code>.
+            </p>
+            <p>XML Condition Expression Example:</p>
+            <figure><code>&lt;bpmn:sequenceFlow id="Flow_1"
+  sourceRef="Task_A"
+  targetRef="Task_B"&gt;
+  &lt;bpmn:conditionExpression
+    xsi:type="bpmn:tFormalExpression"&gt;
+    {compare, {payment, [], [], []}, 3, 100}
+  &lt;/bpmn:conditionExpression&gt;
+&lt;/bpmn:sequenceFlow&gt;</code></figure>
+            <p>Note: The above matches any `#payment{}` document and checks if its third field equals `100`.</p>
+
+            <h5>B. Service Condition: <code>{service, Fun}</code> or <code>{service, Fun, Module}</code></h5>
+            <p>Delegates condition evaluation to an Erlang function callback. BPE executes <code>Module:Fun(Proc)</code>
+                which must return <code>true</code> or <code>false</code>.</p>
+            <p>XML Condition Expression Example:</p>
+            <figure><code>&lt;bpmn:sequenceFlow id="Flow_2"
+  sourceRef="Task_A"
+  targetRef="Task_B"&gt;
+  &lt;bpmn:conditionExpression
+    xsi:type="bpmn:tFormalExpression"&gt;
+    {service, check_payment_validity, finance_module}
+  &lt;/bpmn:conditionExpression&gt;
+&lt;/bpmn:sequenceFlow&gt;</code></figure>
+
+            <h5>C. Gateway Block Condition: <code>{service, gw_block}</code></h5>
+            <p>A special condition that checks if there is an active blocking rule in Mnesia under the
+                <code>gw_block</code> table for the gateway source and the process ID. The flow is blocked if a block is
+                found.
+            </p>
+
+            <h5>D. Default / Empty Condition: <code>[]</code></h5>
+            <p>An empty condition list evaluates to <code>true</code> by default, causing the sequence flow to
+                transition immediately.</p>
+
+            <h4>2. Callback Tuples</h4>
+            <p>Executed when sequence flow transition occurs. Callback records can be written as:</p>
+            <ul>
+                <li><code>{callback, Fun}</code>: Evaluates
+                    <code>Module:Fun({callback, Source, Target}, Result, PrevState)</code>
+                </li>
+                <li><code>{callback, Fun, Module}</code>: Evaluates
+                    <code>Module:Fun({callback, Source, Target}, Result, PrevState)</code>
+                </li>
+                <li><code>{callback, Fun, Module, Arg}</code>: Evaluates
+                    <code>Module:Fun({callback, Source, Target}, Result, Arg)</code>
+                </li>
+            </ul>
+            <p>XML Callback Example:</p>
+            <figure><code>&lt;bpmn:sequenceFlow id="Flow_3"
+  sourceRef="Task_A"
+  targetRef="Task_B"&gt;
+  &lt;bpmn:conditionExpression
+    xsi:type="bpmn:tFormalExpression"&gt;
+    {callback, log_flow_transition, logger_helper}
+  &lt;/bpmn:conditionExpression&gt;
+&lt;/bpmn:sequenceFlow&gt;</code></figure>
+        </section>
+
+        <section>
+            <h3>CALLBACK API FOR ACTIONS</h3>
+            <p>Gateways can invoke actions during flow transitions. Developers implement the <code>action/2</code>
+                function in their process module:</p>
+            <h4>action({request, From::atom(), To::atom()}, #process{}) -> #result{}</h4>
+            <p>Example implementation:</p>
+            <figure><code>-module(my_workflow).
+-include_lib("bpe/include/bpe.hrl").
+-export([action/2]).
+
+% Handle flow request from gateway
+action({request, <<"ExclusiveGateway_1">>,
+                 <<"Task_Process">>}, Proc) ->
+    logger:info("Transition to Task_Process"),
+    #result{type = reply, reply = ok, state = Proc};
+
+action({request, From, To}, Proc) ->
+    #result{type = reply, reply = ok, state = Proc}.</code></figure>
+            <section>
+                <h3>SCHEDULER IMPLEMENTATION</h3>
+                <p>During the scheduler tick (via <code>bpe:next/1</code>), BPE evaluates gateways using the following
+                    mechanisms:</p>
+
+                <h5>The Gateway Record</h5>
+                <p>Defined in <code>bpe.hrl</code>, the gateway record extends the base task record fields:</p>
+                <figure><code>-record(gateway, {
+    ?TASK,
+    type = parallel :: gate(),
+    def  = [] :: list()
+}).</code></figure>
+
+                <h5>Exclusive Gateway Branching</h5>
+                <p>For exclusive gateways, BPE evaluates the outgoing flow conditions in order. If all evaluate to
+                    <code>false</code> and a default flow is specified (via the <code>def</code> field), it transitions
+                    to that default flow. If no default is defined, a runtime error is logged, halting execution:
+                </p>
+                <figure><code>get_inserted(#gateway{id = Name, type = exclusive,
+                      output = Out, def = []},
+             _, _, Proc) ->
+    case first_matched_flow(Out, Proc) of
+        [] ->
+            add_error(Proc,
+                      "All conditions evaluate to false in "
+                      "exlusive gateway without default",
+                      Name),
+            [];
+        X -> X
+    end;
+get_inserted(#gateway{type = exclusive, output = Out,
+                      def = DefFlow},
+             _, _, Proc) ->
+    case first_matched_flow(Out -- [DefFlow], Proc) of
+        [] -> [DefFlow];
+        X -> X
+    end;</code></figure>
+
+                <h5>Parallel & Inclusive Gateway Merging (Join)</h5>
+                <p>When multiple concurrent paths merge into a parallel or inclusive gateway, BPE verifies if all other
+                    incoming paths have arrived before advancing. It checks the execution history logs
+                    (<code>check_all_flows/2</code>) to determine synchronization state. If any path is still pending,
+                    execution of the current thread is halted (returns <code>[]</code>):</p>
+                <figure><code>get_inserted(#gateway{type = Type, input = In,
+                      output = Out},
+             Flow, ScedId, _Proc)
+    when Type == inclusive; Type == parallel ->
+    case check_all_flows(In -- [Flow#sequenceFlow.id],
+                         ScedId)
+        of
+        true -> Out;
+        false -> []
+    end;
+
+check_all_flows([], _) -> true;
+check_all_flows(_, #step{id = 0}) -> false;
+check_all_flows(Needed, ScedId = #step{id = Id}) ->
+    case hist(ScedId) of
+        #hist{task = #sequenceFlow{id = Fid}} ->
+            check_all_flows(Needed -- [Fid],
+                            ScedId#step{id = Id - 1});
+        _ -> false
+    end.</code></figure>
+            </section>
+
+            <section>
+                <p>This module may refer to:
+                    <b><a href="bpe.htm">BPE</a></b>,
+                    <b><a href="task.htm">TASK</a></b>,
+                    <b><a href="event.htm">EVENT</a></b>.
+                </p>
+            </section>
+
+    </main>
+    <footer>
+        Made with <span class="heart">❤</span> to N2O
+    </footer>
+</body>
+<script>function drop() { document.getElementById("dropdown").classList.toggle("show"); }</script>
+
 </html>

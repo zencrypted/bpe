@@ -1,63 +1,191 @@
-<!DOCTYPE html><html><head><meta charset="utf-8" /><meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<meta name="description" content="" /><meta name="author" content="Maxim Sokhatsky" />
-<title>TASK</title>
-<link rel="stylesheet" href="https://n2o.dev/blank.css"/>
-<link rel="stylesheet" href="https://n2o.dev/zima.css"/>
-<link rel="shortcut icon" type="image/x-icon" href="https://n2o.dev/img/favicon.ico"/>
-<link rel="apple-touch-icon" sizes="180x180" href="https://n2o.dev/img/apple-touch-icon.png"/>
-<link rel="icon" type="image/png" sizes="32x32" href="https://n2o.dev/img/favicon-32x32.png"/>
-<link rel="icon" type="image/png" sizes="16x16" href="https://n2o.dev/img/favicon-16x16.png"/>
-<link rel="manifest" href="https://n2o.dev/img/site.webmanifest"/>
-</head><body><nav>
-    <a href="https://n2o.dev">DEV</a>
-    <a href="https://bpe.n2o.dev">BPE</a>
-    <a href="#" style="background:#ededed;">TASK</a>
-  <div class="dropdown">
-    <a onclick="drop()" class="dropbtn">EN</a>
-    <div id="dropdown" class="dropdown-content">
-      <a href="https://n2o.dev/deps/bpe/man/ua/task.htm">UA</a>
-      <a href="#">EN</a>
-    </div>
-  </div>
-</nav><header>
-    <a href="../index.html"><img src="https://openmoji.org/data/color/svg/1F4A0.svg"/></a>
-    <h1>TASK</h1>
-</header><main>
-    <section>
-        <h3>INTRO</h3>
-        <p>The <b>bpe_task</b> module provides tasks handling functionality (receive, send, user, manual).</p>
-    </section>
-    <section>
-        <h3>TASKS</h3>
-        <p>The list of supported tasks.</p>
-        <figure><img src="img/tasks.png" width="600px"/></figure>
-    </section>
-    <section>
-        <h3>FLOWS</h3>
-        <p>The list of supported flows.</p>
-        <figure><img src="img/flows.png" width="500px"/></figure>
-    </section>
-    <section>
-        <h3>CALLBACK API</h3>
-         <p>BPE allows you to bind on <b>sequenceFlow</b> and its from and to fields by
-            defining action/2 function in your module.</p>
-        <h4>action({request, atom(), atom()}, #process{}) ->
-                   {reply, Task, State} |
-                   {reply, State} |
-                   {error, Message, Task, State} |
-                   {stop, Proc}.</h4>
-        <p>Example:</p>
-        <figure><code> action({request, From, To}, Proc) -> {stop, Proc}.</code></figure>
-    </section>
-    <section>
-        <p>This module may refer to:
-        <b><a href="bpe.htm">BPE</a></b>
-        </p>
-    </section>
+<!DOCTYPE html>
+<html>
 
-</main><footer>
-    Made with <span class="heart">❤</span> to N2O
-</footer></body>
-<script>function drop(){document.getElementById("dropdown").classList.toggle("show");}</script>
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="BPE TASK manual" />
+    <meta name="author" content="Maxim Sokhatsky" />
+    <title>TASK</title>
+    <link rel="stylesheet" href="https://n2o.dev/blank.css" />
+    <link rel="stylesheet" href="https://n2o.dev/zima.css" />
+    <link rel="shortcut icon" type="image/x-icon" href="https://n2o.dev/img/favicon.ico" />
+    <link rel="apple-touch-icon" sizes="180x180" href="https://n2o.dev/img/apple-touch-icon.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="https://n2o.dev/img/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="https://n2o.dev/img/favicon-16x16.png" />
+    <link rel="manifest" href="https://n2o.dev/img/site.webmanifest" />
+    <style>
+        section ul li {
+            margin: 5px 0;
+            padding: 2px 0;
+        }
+
+        section h5 {
+            line-height: 1.2;
+            font-size: 1.1rem;
+            padding-left: 20px;
+            max-width: 850px;
+            margin: 20px auto;
+            font-weight: normal;
+            border-left: 2px solid #5BC2E7;
+        }
+
+        section h5 code {
+            word-break: break-all;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+
+<body>
+    <nav>
+        <a href="https://n2o.dev">DEV</a>
+        <a href="https://bpe.n2o.dev">BPE</a>
+        <a href="#" style="background:#ededed;">TASK</a>
+        <div class="dropdown">
+            <a onclick="drop()" class="dropbtn">EN</a>
+            <div id="dropdown" class="dropdown-content">
+                <a href="https://n2o.dev/deps/bpe/man/ua/task.htm">UA</a>
+                <a href="#">EN</a>
+            </div>
+        </div>
+    </nav>
+    <header>
+        <a href="../index.html"><img src="https://openmoji.org/data/color/svg/1F4A0.svg" /></a>
+        <h1>TASK</h1>
+    </header>
+    <main>
+        <section>
+            <h3>INTRO</h3>
+            <p>The <b>bpe_task</b> module provides task-handling functionality. Tasks are workflow nodes (vertices)
+                containing metadata, prompt states, execution requirements, and role permissions.</p>
+        </section>
+
+        <section>
+            <h3>TASKS</h3>
+            <p>BPE supports multiple task records defined in <code>bpe.hrl</code>:</p>
+            <figure><img src="img/tasks.png" width="600px" /></figure>
+
+            <h4>Base Task Fields (?TASK Macro)</h4>
+            <p>Every task record inherits the following default properties:</p>
+            <ul>
+                <li><code>id</code>: A unique list or atom identifying the task node.</li>
+                <li><code>name</code>: A descriptive name or binary string for UI presentation.</li>
+                <li><code>input</code>: Input parameter schema.</li>
+                <li><code>output</code>: Output parameter schema.</li>
+                <li><code>prompt</code>: Prompt configurations.</li>
+                <li><code>roles</code>: A list of allowed roles (atoms) authorized to trigger this task.</li>
+                <li><code>etc</code>: Additional key-value metadata list.</li>
+            </ul>
+
+            <h4>Task Types</h4>
+
+            <h5>#beginEvent{}</h5>
+            <p>The start node of the process.</p>
+            <figure><code>-record(beginEvent, { ?TASK }).</code></figure>
+
+            <h5>#endEvent{}</h5>
+            <p>The final node of the process. Reaching this task automatically stops process execution.</p>
+            <figure><code>-record(endEvent, { ?TASK }).</code></figure>
+
+            <h5>#task{}</h5>
+            <p>A generic task node.</p>
+            <figure><code>-record(task, { ?TASK }).</code></figure>
+
+            <h5>#userTask{}</h5>
+            <p>A task that requires human interaction/authorization (e.g., approvals).</p>
+            <figure><code>-record(userTask, { ?TASK }).</code></figure>
+
+            <h5>#serviceTask{}</h5>
+            <p>An automated task executing back-end service integration logic.</p>
+            <figure><code>-record(serviceTask, { ?TASK }).</code></figure>
+
+            <h5>#receiveTask{}</h5>
+            <p>Blocks the process execution until an external reader message event is received.</p>
+            <figure><code>-record(receiveTask, { ?TASK, reader = [] :: #reader{} }).</code></figure>
+
+            <h5>#sendTask{}</h5>
+            <p>Performs outbound communication/notifications.</p>
+            <figure><code>-record(sendTask, { ?TASK, writer = [] :: #writer{} }).</code></figure>
+        </section>
+
+        <section>
+            <h3>FLOWS</h3>
+            <p>Connections between tasks are configured using sequenceFlow structures:</p>
+            <figure><img src="img/flows.png" width="500px" /></figure>
+        </section>
+
+        <section>
+            <h3>CALLBACK API</h3>
+            <p>BPE delegates task execution logic to your process module. You must implement the <code>action/2</code>
+                callback:</p>
+            <h4>action({request, From::atom(), To::atom()}, #process{}) -> #result{}</h4>
+
+            <p>The return structure is defined by the <code>#result{}</code> record:</p>
+            <figure><code>-record(result, {
+    type     = reply :: reply | noreply | stop,
+    reply    = [] :: term(),
+    state    = [] :: #process{},
+    reason   = normal :: term(),
+    continue = [] :: list(#continue{}),
+    opt      = [] :: term(),
+    executed = [] :: list(#executor{})
+}).</code></figure>
+
+            <h4>Examples:</h4>
+
+            <h5>1. Service Task Callback</h5>
+            <p>Runs automated backend logic, updates process state, and returns a reply.</p>
+            <figure><code>action({request, <<"InitTask">>,
+                 <<"ProcessDataTask">>}, Proc) ->
+    logger:info("Running automated data processing..."),
+    Docs = process_internal_docs(Proc#process.docs),
+    #result{
+      type = reply,
+      reply = ok,
+      state = Proc#process{docs = Docs}
+    };</code></figure>
+
+            <h5>2. User Task Callback with Role Restriction</h5>
+            <p>A human approval stage. Permissions are checked automatically by the authorization rules defined in the
+                process module (e.g., <code>Module:auth/1</code>).</p>
+            <figure><code>action({request, <<"ApprovalTask">>,
+                 <<"SuccessTask">>}, Proc) ->
+    logger:info("User approval confirmed."),
+    #result{type = reply, reply = ok, state = Proc};</code></figure>
+
+            <h5>3. Asynchronous Continuation</h5>
+            <p>Delegates further actions to be run asynchronously via the <code>#continue{}</code> execution framework.
+            </p>
+            <figure><code>action({request, <<"ProcessDataTask">>,
+                 <<"NotifyTask">>}, Proc) ->
+    #result{
+        type = reply,
+        reply = ok,
+        state = Proc,
+        continue = [#continue{
+            type = spawn,
+            module = my_notifier,
+            fn = send_async_notifications,
+            args = [Proc#process.id]
+        }]
+    };</code></figure>
+        </section>
+
+        <section>
+            <p>This module may refer to:
+                <b><a href="bpe.htm">BPE</a></b>,
+                <b><a href="event.htm">EVENT</a></b>,
+                <b><a href="gate.htm">GATE</a></b>.
+            </p>
+        </section>
+
+    </main>
+    <footer>
+        Made with <span class="heart">❤</span> to N2O
+    </footer>
+</body>
+<script>function drop() { document.getElementById("dropdown").classList.toggle("show"); }</script>
+
 </html>

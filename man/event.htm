@@ -1,56 +1,215 @@
-<!DOCTYPE html><html><head><meta charset="utf-8" />
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<meta name="description" content="" /><meta name="author" content="Maxim Sokhatsky" />
-<title>EVENT</title>
-<link rel="stylesheet" href="https://n2o.dev/blank.css"/>
-<link rel="stylesheet" href="https://n2o.dev/zima.css"/>
-<link rel="shortcut icon" type="image/x-icon" href="https://n2o.dev/img/favicon.ico"/>
-<link rel="apple-touch-icon" sizes="180x180" href="https://n2o.dev/img/apple-touch-icon.png"/>
-<link rel="icon" type="image/png" sizes="32x32" href="https://n2o.dev/img/favicon-32x32.png"/>
-<link rel="icon" type="image/png" sizes="16x16" href="https://n2o.dev/img/favicon-16x16.png"/>
-<link rel="manifest" href="https://n2o.dev/img/site.webmanifest"/>
-</head><body><nav>
-    <a href="https://n2o.dev">DEV</a>
-    <a href="https://bpe.n2o.dev">BPE</a>
-    <a href="#" style="background:#ededed;">EVENT</a>
-  <div class="dropdown">
-    <a onclick="drop()" class="dropbtn">EN</a>
-    <div id="dropdown" class="dropdown-content">
-      <a href="https://n2o.dev/deps/bpe/man/ua/event.htm">UA</a>
-      <a href="#">EN</a>
-    </div>
-  </div>
-</nav><header>
-    <a href="../index.html"><img src="https://openmoji.org/data/color/svg/1F4A0.svg"/></a>
-    <h1>EVENT</h1>
-</header><main>
-    <section>
-        <h3>INTRO</h3>
-        <p>The BPMN 1.0 <b>bpe_event</b> module provides generic event handling functionality.</p>
-    </section>
-    <section>
-        <h3>EVENTS</h3>
-        <p>The list of supported events.</p>
-        <figure><img src="img/events.png" width="400px"/></figure>
-    </section>
-    <section>
-        <h3>CALLBACK API</h3>
-         <p>The EVENT API allows you to bind on <b>messageEvent</b>.</p>
-        <h4>action({event,atom(), atom()}, #process{}) ->
-                   {reply, Task, State} |
-                   {reply, State}.</h4>
-        <p>Example:</p>
-        <figure><code> action({event, Name, Payload}, Proc) -> {replay, Proc}.</code></figure>
-    </section>
-    <section>
-        <p>This module may refer to:
-        <b><a href="bpe.htm">BPE</a></b>
-        </p>
-    </section>
+<!DOCTYPE html>
+<html>
 
-</main><footer>
-    Made with <span class="heart">❤</span> to N2O
-</footer></body>
-<script>function drop(){document.getElementById("dropdown").classList.toggle("show");}</script>
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="BPE EVENT API manual" />
+    <meta name="author" content="Maxim Sokhatsky" />
+    <title>EVENT</title>
+    <link rel="stylesheet" href="https://n2o.dev/blank.css" />
+    <link rel="stylesheet" href="https://n2o.dev/zima.css" />
+    <link rel="shortcut icon" type="image/x-icon" href="https://n2o.dev/img/favicon.ico" />
+    <link rel="apple-touch-icon" sizes="180x180" href="https://n2o.dev/img/apple-touch-icon.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="https://n2o.dev/img/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="https://n2o.dev/img/favicon-16x16.png" />
+    <link rel="manifest" href="https://n2o.dev/img/site.webmanifest" />
+    <style>
+        section ul li {
+            margin: 5px 0;
+            padding: 2px 0;
+        }
+
+        section h5 {
+            line-height: 1.2;
+            font-size: 1.1rem;
+            padding-left: 20px;
+            max-width: 850px;
+            margin: 20px auto;
+            font-weight: normal;
+            border-left: 2px solid #5BC2E7;
+        }
+
+        section h5 code {
+            word-break: break-all;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+
+<body>
+    <nav>
+        <a href="https://n2o.dev">DEV</a>
+        <a href="https://bpe.n2o.dev">BPE</a>
+        <a href="#" style="background:#ededed;">EVENT</a>
+        <div class="dropdown">
+            <a onclick="drop()" class="dropbtn">EN</a>
+            <div id="dropdown" class="dropdown-content">
+                <a href="https://n2o.dev/deps/bpe/man/ua/event.htm">UA</a>
+                <a href="#">EN</a>
+            </div>
+        </div>
+    </nav>
+    <header>
+        <a href="../index.html"><img src="https://openmoji.org/data/color/svg/1F4A0.svg" /></a>
+        <h1>EVENT</h1>
+    </header>
+    <main>
+        <section>
+            <h3>INTRO</h3>
+            <p>The BPMN 1.0/2.0 <b>bpe_event</b> module provides generic event-handling functionality for BPE. It
+                defines event triggers, boundary limits, timers, and pub/sub message subscriptions.</p>
+        </section>
+
+        <section>
+            <h3>EVENTS</h3>
+            <p>BPE supports multiple event structures defined in <code>bpe.hrl</code>:</p>
+            <figure><img src="img/events.png" width="400px" /></figure>
+
+            <h4>#messageEvent{}</h4>
+            <p>Used to represent synchronous communication events inside workflows.</p>
+            <figure><code>-record(messageEvent, {
+    id      = [] :: [] | list() | binary(),
+    topic   = [] :: [] | list() | binary(),
+    sender  = [] :: [] | term(),
+    timeout = [] :: [] | #timeout{},
+    name    = [] :: [] | term(),
+    payload = [] :: [] | term()
+}).</code></figure>
+
+            <h4>#asyncEvent{}</h4>
+            <p>Represents asynchronous (cast) communication events inside workflows.</p>
+            <figure><code>-record(asyncEvent, {
+    id      = [] :: [] | list() | binary(),
+    sender  = [] :: [] | term(),
+    topic   = [] :: [] | list() | binary(),
+    name    = [] :: [] | term(),
+    payload = [] :: [] | term()
+}).</code></figure>
+
+            <h4>#broadcastEvent{}</h4>
+            <p>Represents system-wide events that are published to multiple subscribers.</p>
+            <figure><code>-record(broadcastEvent, {
+    id      = [] :: [] | list() | binary(),
+    sender  = [] :: [] | term(),
+    topic   = [] :: [] | list() | binary(),
+    type    = immediate :: immediate | delayed,
+    name    = [] :: [] | term(),
+    payload = [] :: [] | term()
+}).</code></figure>
+
+            <h4>#boundaryEvent{}</h4>
+            <p>An event bound to the boundary of an activity (e.g., a task). It can trigger a timeout or redirect
+                execution when fired.</p>
+            <figure><code>-record(boundaryEvent, {
+    id           = [] :: list() | atom(),
+    name         = [] :: list() | binary(),
+    prompt       = [] :: list(tuple()),
+    etc          = [] :: list({term(), term()}),
+    payload      = [] :: [] | binary(),
+    timeout      = [] :: [] | #timeout{},
+    timeDate     = [] :: [] | binary(),
+    timeDuration = [] :: [] | binary(),
+    timeCycle    = [] :: [] | binary()
+}).</code></figure>
+        </section>
+
+        <section>
+            <h3>EVENT API</h3>
+            <p>Use these functions to submit events to a process session or manage subscriptions:</p>
+
+            <h4 id="messageEvent/2,3">messageEvent(procId(), #messageEvent{}) -> {complete, any()} | {error, any()}</h4>
+            <p>Sends a synchronous message event to the process gen_server. It wakes the process if offline, locks it,
+                and runs the handler callback.</p>
+            <figure><code>Event = #messageEvent{
+  name = <<"approval">>,
+  payload = <<"approved">>
+},
+{complete, NextTask} =
+  bpe:messageEvent(<<"proc-123">>, Event).</code></figure>
+
+            <h4 id="asyncEvent/2,3">asyncEvent(procId(), #asyncEvent{}) -> ok | {error, any()}</h4>
+            <p>Sends an asynchronous event (cast) to the process gen_server.</p>
+            <figure><code>Event = #asyncEvent{name = <<"cancel">>},
+ok = bpe:asyncEvent(<<"proc-123">>, Event).</code></figure>
+
+            <h4 id="broadcastEvent/2">broadcastEvent(Topic::binary() | list(), #broadcastEvent{}) -> ok</h4>
+            <p>Publishes a broadcast event to all subscribers of the specified topic.
+                If the broadcast type is <code>immediate</code>, the target process is immediately loaded and started,
+                and the message is delivered via <code>gen_server:cast</code>.
+                If the type is <code>delayed</code> (non-immediate), the message is appended directly to the process's
+                database queue at <code>/bpe/messages/queue/&lt;ProcId&gt;</code> without waking it up.</p>
+            <figure><code>Broadcast = #broadcastEvent{
+  type = immediate,
+  name = <<"new_invoice">>,
+  payload = InvoiceId
+},
+ok = bpe:broadcastEvent(
+  <<"finance_topic">>,
+  Broadcast
+).</code></figure>
+
+            <h4 id="subscribe/2">subscribe(procId(), Topic::binary() | list()) -> ok | exist</h4>
+            <p>Subscribes a process to a broadcast topic in the database registry.</p>
+            <figure><code>bpe:subscribe(
+  <<"proc-123">>,
+  <<"finance_topic">>
+).</code></figure>
+
+            <h4 id="unsubscribe/2">unsubscribe(procId(), Topic::binary() | list()) -> ok</h4>
+            <p>Unsubscribes a process from a broadcast topic.</p>
+            <figure><code>bpe:unsubscribe(
+  <<"proc-123">>,
+  <<"finance_topic">>
+).</code></figure>
+        </section>
+
+        <section>
+            <h3>CALLBACK API</h3>
+            <p>To intercept and process events, you must implement the <code>action/2</code> callback in your process
+                module.
+                The engine redirects event processing to this function:
+                <code>Module:action({event, Name, Payload}, Proc) -> #result{}</code>
+            </p>
+
+            <p>Example handler callback implementation:</p>
+            <figure><code>-module(my_workflow).
+-include_lib("bpe/include/bpe.hrl").
+-export([action/2]).
+
+% Handle a synchronous messageEvent
+action({event, <<"approval">>, <<"approved">>}, Proc) ->
+    logger:info("Invoice was approved!"),
+    #result{
+      type = reply,
+      reply = ok,
+      state = Proc#process{status = <<"approved">>}
+    };
+
+action({event, EventName, Payload}, Proc) ->
+    logger:notice("Unhandled event ~p with payload ~p",
+                  [EventName, Payload]),
+    #result{
+      type = reply,
+      reply = {error, unhandled},
+      state = Proc
+    }.</code></figure>
+        </section>
+
+        <section>
+            <p>This module may refer to:
+                <b><a href="bpe.htm">BPE</a></b>,
+                <b><a href="task.htm">TASK</a></b>,
+                <b><a href="gate.htm">GATE</a></b>.
+            </p>
+        </section>
+
+    </main>
+    <footer>
+        Made with <span class="heart">❤</span> to N2O
+    </footer>
+</body>
+<script>function drop() { document.getElementById("dropdown").classList.toggle("show"); }</script>
+
 </html>
