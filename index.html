@@ -1,72 +1,164 @@
-<!DOCTYPE html><html><head><meta charset="utf-8" />
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<meta name="description" content="" /><meta name="author" content="Maxim Sokhatsky" />
-<title>BPE</title>
-<link rel="stylesheet" href="https://n2o.dev/blank.css"/>
-<link rel="stylesheet" href="https://n2o.dev/zima.css"/>
-<link rel="shortcut icon" type="image/x-icon" href="https://n2o.dev/img/favicon.ico"/>
-<link rel="apple-touch-icon" sizes="180x180" href="https://n2o.dev/img/apple-touch-icon.png"/>
-<link rel="icon" type="image/png" sizes="32x32" href="https://n2o.dev/img/favicon-32x32.png"/>
-<link rel="icon" type="image/png" sizes="16x16" href="https://n2o.dev/img/favicon-16x16.png"/>
-<link rel="manifest" href="https://n2o.dev/img/site.webmanifest"/>
-</head><body><nav>
-    <a href="https://n2o.dev">DEV</a>
-    <a href="https://bpe.zencrypted.dev" style="background:#ededed;">BPE</a>
-  <div class="dropdown">
-    <a onclick="drop()" class="dropbtn">EN</a>
-    <div id="dropdown" class="dropdown-content">
-      <a href="https://n2o.dev/ua/deps/bpe/">UA</a>
-      <a href="#">EN</a>
-    </div>
-  </div>
-</nav><header>
-    <a href="https://github.com/synrc/bpe"><img src="https://openmoji.org/data/color/svg/1F4A0.svg"/></a>
-    <h1>BPE</h1>
-</header><aside>
-    <article>
-        <section>
-            <h3>SYNOPSIS</h3>
-            <div>
-                Business Processing for Enterprises (BPE) provides infrastructure
-                for workflow definitions according to ISO-19510 BPMN 2.0 OMG standard.
-                It can be used for process orchestration,
-                rule based production systems and as transactional log.
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="" />
+    <meta name="author" content="Maxim Sokhatsky" />
+    <title>BPE</title>
+    <link rel="stylesheet" href="https://n2o.dev/blank.css" />
+    <link rel="stylesheet" href="https://n2o.dev/zima.css" />
+    <link rel="shortcut icon" type="image/x-icon" href="https://n2o.dev/img/favicon.ico" />
+    <link rel="apple-touch-icon" sizes="180x180" href="https://n2o.dev/img/apple-touch-icon.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="https://n2o.dev/img/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="https://n2o.dev/img/favicon-16x16.png" />
+    <link rel="manifest" href="https://n2o.dev/img/site.webmanifest" />
+    <style>
+        /* NATO Color Theme Overrides */
+        body,
+        header,
+        nav {
+            background-color: #F0F4F8 !important;
+        }
+
+        main,
+        footer,
+        aside {
+            background-color: #293757 !important;
+        }
+
+        footer {
+            color: #A0AEC0 !important;
+        }
+
+        main section {
+            background-color: #F0F4F8 !important;
+        }
+
+        main section:nth-of-type(even) {
+            background-color: #FFFFFF !important;
+        }
+
+        h1,
+        h2,
+        h3,
+        h4,
+        h5 {
+            color: #293757 !important;
+            border-left-color: #293757 !important;
+        }
+
+        nav a {
+            color: #293757 !important;
+        }
+
+        nav a:hover {
+            border-bottom-color: #293757 !important;
+        }
+
+        nav a:visited {
+            color: #293757 !important;
+        }
+
+        main a,
+        main a:visited {
+            color: #293757 !important;
+            border-bottom-color: #293757 !important;
+        }
+
+        .dropdown {
+            color: #293757 !important;
+        }
+
+        figure code,
+        figure pre {
+            color: #E2E8F0 !important;
+            background-color: #1A2438 !important;
+        }
+
+        aside h3 {
+            color: #E2E8F0 !important;
+        }
+
+        aside div {
+            color: #E2E8F0 !important;
+        }
+
+        aside a,
+        aside a:visited {
+            color: #E2E8F0 !important;
+            border-bottom-color: #E2E8F0 !important;
+        }
+    </style>
+</head>
+
+<body>
+    <nav>
+        <a href="https://n2o.dev">DEV</a>
+        <a href="index.html" style="background:#ededed;">BPE</a>
+        <div class="dropdown">
+            <a onclick="drop()" class="dropbtn">EN</a>
+            <div id="dropdown" class="dropdown-content">
+                <a href="https://n2o.dev/ua/deps/bpe/">UA</a>
+                <a href="#">EN</a>
             </div>
-            <br />
-        <figure>
-        <code> $ mad get bpe
+        </div>
+    </nav>
+    <header>
+        <a href="https://github.com/synrc/bpe"><img src="https://openmoji.org/data/color/svg/1F4A0.svg" /></a>
+        <h1>BPE</h1>
+    </header>
+    <aside>
+        <article>
+            <section>
+                <h3>SYNOPSIS</h3>
+                <div>
+                    Business Processing for Enterprises (BPE) provides infrastructure
+                    for workflow definitions according to ISO-19510 BPMN 2.0 OMG standard.
+                    It can be used for process orchestration,
+                    rule based production systems and as transactional log.
+                </div>
+                <br />
+                <figure>
+                    <code> $ mad get bpe
  $ cd deps/bpe
  $ mix deps.get
- $ iex -S mix</code></figure>
+ $ iex -S mix</code>
+                </figure>
+            </section>
+            <section>
+                <h3>MODULES</h3>
+                <div>
+                    <ul>
+                        <li><a href="man/bpe.htm">BPE</a></li>
+                        <li><a href="man/task.htm">TASK</a></li>
+                        <li><a href="man/gate.htm">GATEWAY</a></li>
+                        <li><a href="man/event.htm">EVENT</a></li>
+                    </ul>
+                </div>
+                <br />
+                <div>
+                    NOV 2022 © <a href="https://github.com/5HT">5HT</a> ISC<br />
+                    VER 7.1 6.11 5.12
+                </div>
+            </section>
+            <section>
+            </section>
+        </article>
+    </aside>
+    <main>
+        <section>
+            <h3>MODEL</h3>
+            <p>You can use Camunda Modeler of <a href="https://bpmn.io">bpmn.io</a> with BPE:</p>
+            <figure><img src="man/img/camunda.png" /></figure>
         </section>
         <section>
-            <h3>MODULES</h3>
-            <div><ul><li><a href="man/bpe.htm">BPE</a></li>
-                     <li><a href="man/task.htm">TASK</a></li>
-                     <li><a href="man/gate.htm">GATEWAY</a></li>
-                     <li><a href="man/event.htm">EVENT</a></li></ul></div>
-            <br />
-            <div>
-                NOV 2022 © <a href="https://github.com/5HT">5HT</a> ISC<br />
-                VER 7.1 6.11 5.12
-            </div>
-        </section>
-        <section>
-        </section>
-    </article>
-</aside>
-<main>
-    <section>
-    <h3>MODEL</h3>
-    <p>You can use Camunda Modeler of <a href="https://bpmn.io">bpmn.io</a> with BPE:</p>
-    <figure><img src="man/img/camunda.png"/></figure>
-    </section>
-    <section>
-    <h3>SESSION</h3>
-    <p>Transactional persistent (rocksdb) business processing with multi-threading executioin,
-       hierarchical traces and BPMN 2.0 XML support out of the box.</p>
-    <figure><code>
+            <h3>SESSION</h3>
+            <p>Transactional persistent (rocksdb) business processing with multi-threading executioin,
+                hierarchical traces and BPMN 2.0 XML support out of the box.</p>
+            <figure><code>
 iex(1)> {_,p} = :bpe.start :bpe_xml.def, []
 {:ok, "77012724426000"}
 iex(2)> :bpe.next p
@@ -85,20 +177,21 @@ iex(8)> :bpe.next p
 :Final
     </code></figure>
 
-<figure>
-    <figcaption>How the process is stored in KVS</figcaption>
-    <code>
+            <figure>
+                <figcaption>How the process is stored in KVS</figcaption>
+                <code>
  iex(10)> :kvs.all :writer
  [
    {:writer, '/bpe/proc', 1, [], [], []},
    {:writer, '/bpe/flow/77012724426000', 1, [], [], []},
    {:writer, '/bpe/hist/77012724426000', 1, [], [], []}
  ]
-    </code></figure>
+    </code>
+            </figure>
 
-<figure>
-    <figcaption>The hierarchical process trace of flows but not tasks:</figcaption>
-    <code>
+            <figure>
+                <figcaption>The hierarchical process trace of flows but not tasks:</figcaption>
+                <code>
  iex(11)> :bpe.hist p
  [
    {:hist, {:step, 7, '77012724426000'}, :feed, [], [], [], [],
@@ -125,11 +218,12 @@ iex(8)> :bpe.next p
    {:hist, {:step, 0, '77012724426000'}, :feed, [], [], [], [], :Created, [],
     {:ts, {{2019, 10, 11}, {4, 2, 25}}}}
  ]
-     </code></figure>
+     </code>
+            </figure>
 
-<figure>
-    <figcaption>The history of scheduler state of execution threads:</figcaption>
-    <code>
+            <figure>
+                <figcaption>The history of scheduler state of execution threads:</figcaption>
+                <code>
  > :kvs.all '/bpe/flow/77012724426000'
  [
    {:sched, {:step, 0, '77012724426000'}, 1, ['x1']},
@@ -141,17 +235,18 @@ iex(8)> :bpe.next p
    {:sched, {:step, 6, '77012724426000'}, 1, ['x7']},
    {:sched, {:step, 7, '77012724426000'}, 1, []}
  ]
-    </code></figure>
-    </section>
-     <section>
-<h3>BPMN SPEC</h3>
+    </code>
+            </figure>
+        </section>
+        <section>
+            <h3>BPMN SPEC</h3>
 
-<p>This schema covers 80% of all workflows and provides only 20% of standard coverage.
-   We call it Lightweight BPMN or BPE.</p>
+            <p>This schema covers 80% of all workflows and provides only 20% of standard coverage.
+                We call it Lightweight BPMN or BPE.</p>
 
-<figure>
-    <figcaption>Lightweight BPMN</figcaption>
-    <code>
+            <figure>
+                <figcaption>Lightweight BPMN</figcaption>
+                <code>
  -record(beginEvent ,   { ?TASK }).
  -record(endEvent,      { ?TASK }).
  -record(task,          { ?TASK }).
@@ -174,13 +269,14 @@ iex(8)> :bpe.next p
  -type gate()   :: exclusive | parallel | inclusive | complex | event.
  -type tasks()  :: #task{} | #serviceTask{} | #userTask{}
                  | #receiveTask{} | #beginEvent{} | #endEvent{}.
-    </code></figure>
-    </section>
-    <section>
-    <h3>BPE API</h3>
-    <figure>
-    <figcaption>BPE API</figcaption>
-    <code>
+    </code>
+            </figure>
+        </section>
+        <section>
+            <h3>BPE API</h3>
+            <figure>
+                <figcaption>BPE API</figcaption>
+                <code>
  -record(ts,    { time= [] :: term() }).
  -record(step,  { id = 0 :: integer(), proc = "" :: list() }).
  -record(sched, { id = [] :: [] | #step{},
@@ -213,15 +309,16 @@ iex(8)> :bpe.next p
 
  -record(subProcess, { name=[] :: [] | atom(),
                        diagram= #process{} :: #process{} }).
-    </code></figure>
+    </code>
+            </figure>
 
-    </section>
-     <section>
+        </section>
+        <section>
 
-     <h3>BANK SAMPLE</h3>
-<figure>
-    <figcaption>IBAN account transactions as a process:</figcaption>
-    <code>
+            <h3>BANK SAMPLE</h3>
+            <figure>
+                <figcaption>IBAN account transactions as a process:</figcaption>
+                <code>
  -module(bpe_account).
  -include("bpe.hrl").
  -compile(export_all).
@@ -254,27 +351,37 @@ iex(8)> :bpe.next p
         events = [#messageEvent { name='PaymentReceived'},
                   #boundaryEvent{ name='*',
                                   timeout=#timeout{spec={0,{10,0,10}}}}]}.
-    </code></figure>
-    </section>
-     <section>
-        <a name="plugin"></a><h3>PRESENCE</h3>
-        <p>Companies that use BPE:</p>
-        <div>
-        <ul><li><a href="https://privatbank.ua/depozyty">privatbank.ua/depozyty</a> — АТ КБ "ПриватБанк"</li>
-            <li><a href="https://nynja.io">nynja.io</a> — NYNJA, Inc.</li>
-            <li><a href="https://infotech.gov.ua">infotech.gov.ua</a> — ДП "ІНФОТЕХ".</li>
-            </ul></div>
-        <br /><br />
-    </section>
-     <section>
-        <a name="plugin"></a><h3>BDFL AUTHOR</h3>
-        <div>
-        <ul><li><a href="https://github.com/5HT">5HT</a> — Namdak Tonpa</li>
-        </ul></div>
-        <br /><br />
-    </section>
-</main><footer>
-    Made with <span class="heart">❤</span> to N2O
-</footer></body>
-<script>function drop(){document.getElementById("dropdown").classList.toggle("show");}</script>
+    </code>
+            </figure>
+        </section>
+        <section>
+            <a name="plugin"></a>
+            <h3>PRESENCE</h3>
+            <p>Companies that use BPE:</p>
+            <div>
+                <ul>
+                    <li><a href="https://privatbank.ua/depozyty">privatbank.ua/depozyty</a> — АТ КБ "ПриватБанк"</li>
+                    <li><a href="https://nynja.io">nynja.io</a> — NYNJA, Inc.</li>
+                    <li><a href="https://infotech.gov.ua">infotech.gov.ua</a> — ДП "ІНФОТЕХ".</li>
+                </ul>
+            </div>
+            <br /><br />
+        </section>
+        <section>
+            <a name="plugin"></a>
+            <h3>BDFL AUTHOR</h3>
+            <div>
+                <ul>
+                    <li><a href="https://github.com/5HT">5HT</a> — Namdak Tonpa</li>
+                </ul>
+            </div>
+            <br /><br />
+        </section>
+    </main>
+    <footer>
+        Made with <span class="heart">❤</span> to N2O
+    </footer>
+</body>
+<script>function drop() { document.getElementById("dropdown").classList.toggle("show"); }</script>
+
 </html>

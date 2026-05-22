@@ -28,12 +28,84 @@
             max-width: 850px;
             margin: 20px auto;
             font-weight: normal;
-            border-left: 2px solid #5BC2E7;
+            border-left: 2px solid #293757;
         }
 
         section h5 code {
             word-break: break-all;
             white-space: pre-wrap;
+        }
+
+        section figure {
+            max-width: 850px;
+            margin: 15px auto;
+        }
+
+        section figure code {
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+        /* NATO Color Theme Overrides */
+        body,
+        header,
+        nav {
+            background-color: #F0F4F8 !important;
+        }
+
+        main,
+        footer,
+        aside {
+            background-color: #293757 !important;
+        }
+
+        footer {
+            color: #A0AEC0 !important;
+        }
+
+        main section {
+            background-color: #F0F4F8 !important;
+        }
+
+        main section:nth-of-type(even) {
+            background-color: #FFFFFF !important;
+        }
+
+        h1,
+        h2,
+        h3,
+        h4,
+        h5 {
+            color: #293757 !important;
+            border-left-color: #293757 !important;
+        }
+
+        nav a {
+            color: #293757 !important;
+        }
+
+        nav a:hover {
+            border-bottom-color: #293757 !important;
+        }
+
+        nav a:visited {
+            color: #293757 !important;
+        }
+
+        main a,
+        main a:visited {
+            color: #293757 !important;
+            border-bottom-color: #293757 !important;
+        }
+
+        .dropdown {
+            color: #293757 !important;
+        }
+
+        figure code,
+        figure pre {
+            color: #E2E8F0 !important;
+            background-color: #1A2438 !important;
         }
     </style>
 </head>
@@ -41,7 +113,7 @@
 <body>
     <nav>
         <a href="https://n2o.dev">DEV</a>
-        <a href="https://bpe.zencrypted.dev">BPE</a>
+        <a href="../index.html">BPE</a>
         <a href="#" style="background:#ededed;">EVENT</a>
         <div class="dropdown">
             <a onclick="drop()" class="dropbtn">EN</a>
