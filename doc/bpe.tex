@@ -1,14 +1,7 @@
 \documentclass[11pt,a4paper]{article}
-\usepackage[utf8]{inputenc}
-
 \usepackage{listings}
-\lstset{
-    backgroundcolor=\color{white},
-    keywordstyle=\color{blue},
-    basicstyle=\ttfamily\footnotesize,
-    columns=fixed,
-    breaklines=true
-}
+\usepackage{hyperref}
+\lstset{basicstyle=\ttfamily\footnotesize,columns=fixed,breaklines=true}
 
 \title{BPE: A Lightweight Native BPMN Implementation \\
 Preserving Clean Process Semantics}
@@ -20,20 +13,34 @@ Preserving Clean Process Semantics}
 \maketitle
 
 \begin{abstract}
-BPE (Business Process Engine) is a compact, production-grade workflow engine written in Erlang/OTP that implements a clean subset of BPMN 2.0. Unlike traditional BPMN engines such as Camunda, where developers are forced to attach scripts and listeners to gateways and sequence flows (pre/post events), BPE treats the process as a natural sequence of actions executed within a single semantic step. This approach dramatically reduces complexity while maintaining full persistence, fault-tolerance, and auditability.
+BPE (Business Process Engine) is a compact, production-grade workflow engine written in Erlang/OTP
+that implements a clean subset of BPMN 2.0. Unlike traditional BPMN engines such as Camunda,
+where developers are forced to attach scripts and listeners to gateways and sequence flows (pre/post events),
+BPE treats the process as a natural sequence of actions executed within a single semantic step.
+This approach dramatically reduces complexity while maintaining full persistence, fault-tolerance, and auditability.
 \end{abstract}
 
+\newpage
+\tableofcontents
+
+\newpage
 \section{Introduction}
 
-BPE is a lightweight business process management engine developed as part of the Synrc stack. It is designed for real enterprise use — particularly in banking, document management, CRM, and telecom systems — where reliability, auditability, and simplicity are paramount.
+BPE is a lightweight business process management engine developed as part of the Synrc stack.
+It is designed for real enterprise use — particularly in banking, document management, CRM,
+and telecom systems — where reliability, auditability, and simplicity are paramount.
 
-At its core, BPE is a microkernel that executes native Erlang record-based process definitions combined with Event-Condition-Action logic. The entire engine consists of roughly 400 lines of clean functional code, making it one of the most compact and maintainable workflow engines available.
+At its core, BPE is a microkernel that executes native Erlang record-based process definitions
+combined with Event-Condition-Action logic. The entire engine consists of roughly 400 lines of
+clean functional code, making it one of the most compact and maintainable workflow engines available.
 
-BPE stores all process state and history in KVS (Key-Value Store), providing strong persistence guarantees and seamless integration with the Erlang ecosystem. Every process instance is a supervised Erlang process with full crash recovery and migration capabilities.
+BPE stores all process state and history in KVS (Key-Value Store), providing strong persistence
+guarantees and seamless integration with the Erlang ecosystem. Every process instance is a
+supervised Erlang process with full crash recovery and migration capabilities.
 
-\section{Key Design Philosophy}
+\subsection{Key Design Philosophy}
 
-The central idea of BPE is to preserve \textbf{clean process semantics}. 
+The central idea of BPE is to preserve \textbf{clean process semantics}.
 
 In most BPMN engines (e.g. Camunda, Activiti, jBPM), the execution model forces developers to split business logic across:
 \begin{itemize}
@@ -45,13 +52,17 @@ In most BPMN engines (e.g. Camunda, Activiti, jBPM), the execution model forces 
 
 This results in fragmented logic that is hard to read, debug, and maintain.
 
-BPE takes the opposite approach: \textbf{the process flow is executed naturally in one action}. A task (userTask or serviceTask) defines its module and the engine calls the corresponding Erlang functions directly. The transition to the next step is handled atomically within the same semantic context.
+BPE takes the opposite approach: \textbf{the process flow is executed naturally in one action}.
+A task (userTask or serviceTask) defines its module and the engine calls the corresponding Erlang functions directly.
+The transition to the next step is handled atomically within the same semantic context.
 
-This design aligns with Erlang’s native process calculus (Pi-calculus) semantics and provides a much more idiomatic and readable way to express business workflows.
+This design aligns with Erlang’s native process calculus (Pi-calculus) semantics
+and provides a much more idiomatic and readable way to express business workflows.
 
-\section{Core Concepts}
+\newpage
+\section{Process Calculus}
 
-\subsection{Process Definition}
+\subsection{Objects}
 
 Processes are defined as Erlang records:
 
@@ -77,7 +88,7 @@ deposit_app() -> #process {
 }.
 \end{lstlisting}
 
-\subsection{Main API}
+\subsection{Morphisms}
 
 \begin{itemize}
     \item \texttt{bpe:start(Process, Options)} — starts a new process instance
@@ -90,7 +101,274 @@ deposit_app() -> #process {
 
 All operations are atomic and persisted through KVS.
 
-\section{Comparison with Camunda and Other Engines}
+\newpage
+\section{Task Taxonomy and Execution Model}
+
+At the core of the BPE workflow model are tasks, which act as the vertices of the process graph. BPE defines a structured taxonomy for tasks, enabling both automated computations and human-in-the-loop interactions.
+
+\subsection{The Base Task Macro}
+
+Every task defined in the system inherits a set of common metadata fields through the \texttt{?TASK} macro. In the Erlang record representation, these properties provide the fundamental execution schema for the engine:
+
+\begin{lstlisting}
+-define(TASK,
+    id      = [] :: [] | list() | binary() | atom(),
+    name    = [] :: [] | list() | binary(),
+    input   = [] :: list(),
+    output  = [] :: list(),
+    prompt  = [] :: list(),
+    roles   = [] :: list(atom()),
+    etc     = [] :: list({term(), term()})
+).
+\end{lstlisting}
+
+These attributes serve the following purposes:
+\begin{itemize}
+    \item \texttt{id}: A unique identifier for the task node.
+    \item \texttt{name}: A human-readable label used primarily in UI rendering.
+    \item \texttt{input} / \texttt{output}: Structured parameter schemas defining the data boundary.
+    \item \texttt{prompt}: Configuration details describing what inputs are expected from external interfaces.
+    \item \texttt{roles}: A list of Erlang atoms representing user roles authorized to trigger actions on this task.
+    \item \texttt{etc}: An open key-value list for custom task metadata.
+\end{itemize}
+
+\subsection{Task Classifications}
+
+BPE inherits a set of task nodes matching the BPMN 2.0 specification. Each is implemented as a native Erlang record:
+\begin{itemize}
+    \item \textbf{Start and End Nodes}:
+    \begin{lstlisting}
+-record(beginEvent, { ?TASK }).
+-record(endEvent,   { ?TASK }).
+    \end{lstlisting}
+    Reaching the \texttt{endEvent} terminal node instructs the engine to immediately stop execution and terminate the process session.
+    
+    \item \textbf{Computational and Interaction Nodes}:
+    \begin{itemize}
+        \item \texttt{\#task\{\}}: A generic execution node.
+        \item \texttt{\#serviceTask\{\}}: An automated backend service node that executes logic without human intervention.
+        \item \texttt{\#userTask\{\}}: A human-in-the-loop stage. Transitioning to or executing a \texttt{userTask} requires authorization checks (typically evaluated via \texttt{Module:auth/1}).
+    \end{itemize}
+    
+    \item \textbf{Communication Nodes}:
+    \begin{lstlisting}
+-record(receiveTask, { ?TASK, reader = [] :: #reader{} }).
+-record(sendTask,    { ?TASK, writer = [] :: #writer{} }).
+    \end{lstlisting}
+    A \texttt{receiveTask} halts execution, waiting for a matching external reader event. A \texttt{sendTask} handles outbound messaging using a designated \texttt{writer} profile.
+\end{itemize}
+
+\subsection{Task Action Execution Model}
+
+When a task transitions, BPE invokes the process module's execution callback:
+\begin{lstlisting}
+Module:action({request, From, To}, Proc) -> #result{}
+\end{lstlisting}
+The outcome is encapsulated within a formal \texttt{\#result\{\}} record:
+\begin{lstlisting}
+-record(result, {
+    type     = reply :: reply | noreply | stop,
+    reply    = [] :: term(),
+    state    = [] :: #process{},
+    reason   = normal :: term(),
+    continue = [] :: list(#continue{}),
+    opt      = [] :: term(),
+    executed = [] :: list(#executor{})
+}).
+\end{lstlisting}
+This record allows callbacks to update the state, return responses to synchronous callers, request execution termination (\texttt{stop}), or delegate background tasks.
+
+\newpage
+\section{Event Semantics and Message Lifecycle}
+
+BPE contains a generalized event handling subsystem managing synchronous communication, asynchronous execution, and system-wide broadcasts.
+
+\subsection{Event Records}
+
+Events in BPE are formalized in \texttt{bpe.hrl} under four main structures:
+
+\begin{itemize}
+    \item \textbf{Synchronous Message Event}:
+    \begin{lstlisting}
+-record(messageEvent, {
+    id      = [] :: [] | list() | binary(),
+    topic   = [] :: [] | list() | binary(),
+    sender  = [] :: [] | term(),
+    timeout = [] :: [] | #timeout{},
+    name    = [] :: [] | term(),
+    payload = [] :: [] | term()
+}).
+    \end{lstlisting}
+    Sent via \texttt{bpe:messageEvent/2}, this triggers synchronous processing and blocks the caller until the transition completes.
+    
+    \item \textbf{Asynchronous Event}:
+    \begin{lstlisting}
+-record(asyncEvent, {
+    id      = [] :: [] | list() | binary(),
+    sender  = [] :: [] | term(),
+    topic   = [] :: [] | list() | binary(),
+    name    = [] :: [] | term(),
+    payload = [] :: [] | term()
+}).
+    \end{lstlisting}
+    Dispatched via \texttt{bpe:asyncEvent/2} as a non-blocking \texttt{gen\_server:cast}.
+    
+    \item \textbf{System-wide Broadcast Event}:
+    \begin{lstlisting}
+-record(broadcastEvent, {
+    id      = [] :: [] | list() | binary(),
+    sender  = [] :: [] | term(),
+    topic   = [] :: [] | list() | binary(),
+    type    = immediate :: immediate | delayed,
+    name    = [] :: [] | term(),
+    payload = [] :: [] | term()
+}).
+    \end{lstlisting}
+    
+    \item \textbf{Boundary Event}:
+    \begin{lstlisting}
+-record(boundaryEvent, {
+    id           = [] :: list() | atom(),
+    name         = [] :: list() | binary(),
+    prompt       = [] :: list(tuple()),
+    etc          = [] :: list({term(), term()}),
+    payload      = [] :: [] | binary(),
+    timeout      = [] :: [] | #timeout{},
+    timeDate     = [] :: [] | binary(),
+    timeDuration = [] :: [] | binary(),
+    timeCycle    = [] :: [] | binary()
+}).
+    \end{lstlisting}
+    Attached to task boundaries, these events trigger timeouts or redirect execution when specific time bounds are reached.
+\end{itemize}
+
+\subsection{Callback Redirection}
+
+All events target a matching callback handler in the workflow process module:
+\begin{lstlisting}
+Module:action({event, Name, Payload}, Proc) -> #result{}
+\end{lstlisting}
+This architecture separates routing logic from event-handling behaviors, keeping process execution clean.
+
+\section{Gateway Routing and Join Synchronization}
+
+Gateways dictate how paths diverge and converge inside a process graph. BPE provides deterministic algorithms for branching, dynamic compilation, and join synchronization.
+
+\subsection{Gateway Classification}
+
+BPE supports four gateway types:
+\begin{itemize}
+    \item \textbf{Exclusive Gateway (Split)}: Evaluates outgoing flow conditions in order, selecting the first that returns \texttt{true}.
+    \item \textbf{Parallel Gateway (Split/Merge)}: Fork/join mechanics. Merging waits for all incoming flows before moving forward.
+    \item \textbf{Inclusive Gateway (Split/Merge)}: Evaluates all conditions, spawning concurrent threads for each matching flow. Merging acts as a synchronizing join.
+    \item \textbf{Complex Gateway}: Custom developer-defined branch-and-merge algorithms.
+\end{itemize}
+
+\subsection{Dynamic XML Condition Compilation}
+
+When parsing BPMN 2.0 XML files, BPE compiles formal conditions written inside \texttt{<bpmn:conditionExpression>} elements. At load-time, BPE parses the text using \texttt{erl\_scan} and \texttt{erl\_eval} to generate Erlang tuples:
+\begin{itemize}
+    \item \textbf{Compare}: \texttt{\{compare, Pattern, FieldIndex, Value\}} checks if the environment documents matching \texttt{Pattern} contain \texttt{Value} at \texttt{FieldIndex}.
+    \item \textbf{Service}: \texttt{\{service, Fun, Module\}} delegates to a custom evaluation function: \texttt{Module:Fun(Proc)}.
+    \item \textbf{Gateway Block}: \texttt{\{service, gw\_block\}} checks Mnesia's \texttt{gw\_block} table to hold transition.
+    \item \textbf{Default}: \texttt{[]} evaluates to \texttt{true}.
+\end{itemize}
+
+BPE also supports sequence flow transition callbacks, allowing logic invocation during step transitions:
+\begin{lstlisting}
+{callback, Fun, Module, Arg} % Evaluates Module:Fun({callback, Src, Dst}, Result, Arg)
+\end{lstlisting}
+
+\subsection{Exclusive Gateway Branching Algorithm}
+
+For exclusive gateways, BPE sequentially scans outgoing sequence flows. If none evaluate to \texttt{true}, it defaults to the flow defined in the \texttt{def} field of the gateway record. If no default is defined, BPE halts execution with a runtime exception:
+
+\begin{lstlisting}
+get_inserted(#gateway{id = Name, type = exclusive, output = Out, def = []}, _, _, Proc) ->
+    case first_matched_flow(Out, Proc) of
+        [] ->
+            add_error(Proc, "All conditions evaluate to false in exclusive gateway without default", Name),
+            [];
+        X -> X
+    end;
+get_inserted(#gateway{type = exclusive, output = Out, def = DefFlow}, _, _, Proc) ->
+    case first_matched_flow(Out -- [DefFlow], Proc) of
+        [] -> [DefFlow];
+        X -> X
+    end;
+\end{lstlisting}
+
+\newpage
+\subsection{Join Synchronization Algorithm}
+
+Parallel and inclusive gateways acting as merges must block the advancing execution thread until all incoming flows have reached the gate. BPE implements this by backtracking through the execution history logs using the history decrement algorithm:
+
+\begin{lstlisting}
+get_inserted(#gateway{type = Type, input = In, output = Out}, Flow, ScedId, _Proc)
+    when Type == inclusive; Type == parallel ->
+    case check_all_flows(In -- [Flow#sequenceFlow.id], ScedId) of
+        true  -> Out;
+        false -> []
+    end;
+
+check_all_flows([], _) -> true;
+check_all_flows(_, #step{id = 0}) -> false;
+check_all_flows(Needed, ScedId = #step{id = Id}) ->
+    case hist(ScedId) of
+        #hist{task = #sequenceFlow{id = Fid}} ->
+            check_all_flows(Needed -- [Fid], ScedId#step{id = Id - 1});
+        _ -> false
+    end.
+\end{lstlisting}
+
+\newpage
+\section{Engine Concurrency, Locking, and Recovery}
+
+BPE operates in a highly concurrent environment. To prevent double-execution, race conditions, and to manage persisted processes, the engine utilizes a set of robust protocols.
+
+\subsection{Mnesia Locking Coordination Protocol}
+
+To prevent parallel requests from starting concurrent \texttt{gen\_servers} or overlapping execution cycles on the same process, BPE implements Mnesia-based coordination locks:
+\begin{enumerate}
+    \item Every API call (such as \texttt{next}, \texttt{complete}, or \texttt{messageEvent}) generates a monotonic lock ID and registers a \texttt{\#terminateLock\{id = Id, pid = ProcId\}} record in Mnesia.
+    \item Upon call completion, BPE invokes \texttt{bpe\_proc:terminate\_check/5}. If the pending lock count exceeds 500, the engine terminates the session with an error to prevent deadlocks.
+    \item If a process yields a \texttt{stop} command but has pending locks in the queue, BPE converts the stop instruction to a normal reply. This keeps the \texttt{gen\_server} online to drain outstanding requests.
+    \item When the last lock is cleared and the process stops, it registers in the \texttt{terminateLocks} ETS cache.
+\end{enumerate}
+
+\subsection{ETS Cache Blocking}
+
+When spawning process \texttt{gen\_servers} (via \texttt{bpe:start/2}), BPE checks the \texttt{terminateLocks} ETS cache. If a matching process ID is found (indicating it is in the process of shutting down), the starter blocks and waits for a \texttt{'DOWN'} monitor message before initiating a new instance.
+
+\newpage
+\subsection{Offline Event Reception and Queue Drainage}
+
+To conserve system resources, inactive processes are unloaded and kept only in persistent KVS storage. BPE guarantees delivery of events to offline processes via a restoration and queue drainage protocol:
+\begin{itemize}
+    \item \textbf{Automatic Restoration}: Any API interaction triggers \texttt{start(load(ProcId), [])}, which restores state from KVS and spawns a worker if offline.
+    \item \textbf{Delayed Event Queueing}: Non-immediate events sent to offline processes are appended to the process's database queue in Mnesia under \texttt{/bpe/messages/queue/\textless{}ProcId\textgreater{}}.
+    \item \textbf{Ping Drainage Cycle}: Upon initialization, BPE's \texttt{init/1} schedules a periodic \texttt{\{timer, ping\}} message. When received, the process reads the queued events and executes them sequentially via \texttt{process\_event/3}. Any leftover queue is drained during the \texttt{terminate/2} phase.
+\end{itemize}
+
+\subsection{Asynchronous Continuation Framework}
+
+For long-running tasks, BPE supports asynchronous continuation, allowing developers to offload computation without blocking the main workflow engine. This is accomplished using the \texttt{\#continue\{\}} record inside the \texttt{\#result\{\}} output structure:
+
+\begin{lstlisting}
+-record(continue, {
+    type   = spawn :: spawn | cast,
+    module = []    :: [] | atom(),
+    fn     = []    :: [] | atom(),
+    args   = []    :: list()
+}).
+\end{lstlisting}
+
+When returned from a task action callback, the engine automatically triggers the continuation logic, e.g., spawning background Erlang processes or invoking async RPC calls, preserving the main engine thread for fast routing.
+
+\newpage
+\section{Conclusion}
+
+\subsection{Comparison with Camunda and Other Engines}
 
 \begin{itemize}
     \item \textbf{Clean Semantics}: BPE executes business logic inside task modules rather than scattering it across listeners and gateways.
@@ -101,9 +379,11 @@ All operations are atomic and persisted through KVS.
     \item \textbf{Performance}: Extremely low overhead — suitable for high-frequency financial workflows.
 \end{itemize}
 
-While Camunda excels in visual modeling for large analyst teams, BPE is optimized for engineering teams that value clarity, maintainability, and performance over drag-and-drop modeling.
+While Camunda excels in visual modeling for large analyst teams, BPE is optimized for engineering teams that value clarity,
+maintainability, and performance over drag-and-drop modeling.
 
-\section{Use Cases}
+\newpage
+\subsection{Use Cases}
 
 BPE has been successfully used in:
 \begin{itemize}
@@ -114,13 +394,18 @@ BPE has been successfully used in:
     \item Regulatory compliance workflows
 \end{itemize}
 
-Its ability to handle both human tasks and automated service tasks within the same clean model makes it particularly suitable for hybrid human–machine business processes.
+Its ability to handle both human tasks and automated service tasks within the same clean model
+makes it particularly suitable for hybrid human–machine business processes.
 
-\section{Conclusion}
+\subsection{Last words}
 
-BPE demonstrates that a BPMN-compatible workflow engine can be implemented in a remarkably clean and efficient way by staying close to the underlying virtual machine semantics. By executing sequence flows naturally within one action and leveraging Erlang’s process model, BPE achieves excellent readability, strong fault tolerance, and production readiness with minimal code.
+BPE demonstrates that a BPMN-compatible workflow engine can be implemented in a remarkably clean
+and efficient way by staying close to the underlying virtual machine semantics.
+By executing sequence flows naturally within one action and leveraging Erlang’s process model,
+BPE achieves excellent readability, strong fault tolerance, and production readiness with minimal code.
 
-For projects that prioritize engineering clarity and operational reliability over visual designer tools, BPE offers a compelling lightweight alternative to heavyweight BPM suites.
+For projects that prioritize engineering clarity and operational reliability over visual designer tools,
+BPE offers a compelling lightweight alternative to heavyweight BPM suites.
 
 \bigskip
 \noindent Documentation and source code: \url{https://synrc.com}
